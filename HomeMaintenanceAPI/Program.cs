@@ -12,6 +12,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.OpenApi.Models;
+using HomeMaintenanceAPI.Application.Mapping;
+using AutoMapper;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -93,7 +95,17 @@ builder.Services.AddScoped<IEmailService,SMTPEmailService>();
 builder.Services.AddScoped<IAuthService,AuthService>();
 builder.Services.AddScoped<ITokenService,TokenService>();
 
+builder.Services.AddScoped<ISpecializationRepository, SpecializationRepository>();
+builder.Services.AddScoped<ISpecializationService, SpecializationService>();
 
+
+
+
+
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<MappingProfile>();
+});
 
 
 
