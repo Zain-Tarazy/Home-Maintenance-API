@@ -50,6 +50,12 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
+        public async Task<User?> GetByRefreshTokenAsync(string refreshToken)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

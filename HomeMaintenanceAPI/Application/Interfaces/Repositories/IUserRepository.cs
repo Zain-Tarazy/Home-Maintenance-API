@@ -10,6 +10,7 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
         Task<bool> PhoneNumberExistsAsync(string phoneNumber);
         Task<User> AddAsync(User user);
         Task UpdateAsync(User user);
+        Task<User?> GetByRefreshTokenAsync(string refreshToken);
         Task SaveChangesAsync();
     }
 }

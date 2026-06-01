@@ -1,5 +1,7 @@
-﻿using HomeMaintenanceAPI.Application.DTOs.Auth;
+﻿using System.Security.Claims;
+using HomeMaintenanceAPI.Application.DTOs.Auth;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -63,6 +65,38 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
                 AccessToken = result.Data!.AccessToken,
                 RefreshToken = result.Data.RefreshToken
             });
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenDto dto)
+        {
+            var result = await _authService.RefreshTokenAsync(dto);
+
+            if (!result.Succeeded)
+                return Unauthorized(result.Error);
+
+            return Ok(new AuthResponseDto
+            {
+                AccessToken = result.Data!.AccessToken,
+                RefreshToken = result.Data.RefreshToken
+            });
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            var result = await _authService.LogoutAsync(userId);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
+
+            return Ok("Logged out successfully.");
         }
 
     }

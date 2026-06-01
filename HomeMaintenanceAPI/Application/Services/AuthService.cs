@@ -169,6 +169,52 @@ namespace HomeMaintenanceAPI.Application.Services
         }
 
 
+        public async Task<ServiceResult<AuthResult>> RefreshTokenAsync(RefreshTokenDto dto)
+        {
+            var user = await _userRepository.GetByRefreshTokenAsync(dto.RefreshToken);
+
+            if (user == null)
+                return ServiceResult<AuthResult>.Failure("Invalid refresh token.");
+
+            if (user.RefreshTokenExpiryTime == null ||
+                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return ServiceResult<AuthResult>.Failure("Refresh token has expired.");
+            }
+
+            var newAccessToken = _tokenService.GenerateAccessToken(user);
+            var newRefreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            return ServiceResult<AuthResult>.Success(new AuthResult
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            });
+        }
+
+        public async Task<ServiceResult> LogoutAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+                return ServiceResult.Failure("User not found.");
+
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            return ServiceResult.Success();
+        }
+
+
 
         //------------------
         private string GenerateSalt()
