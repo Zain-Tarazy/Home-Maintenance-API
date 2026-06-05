@@ -98,6 +98,15 @@ builder.Services.AddScoped<ITokenService,TokenService>();
 builder.Services.AddScoped<ISpecializationRepository, SpecializationRepository>();
 builder.Services.AddScoped<ISpecializationService, SpecializationService>();
 
+builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+
+builder.Services.AddScoped<IProviderProfileRepository, ProviderProfileRepository>();
+builder.Services.AddScoped<IProviderProfileService, ProviderProfileService>();
+
+
+
+
 
 
 
