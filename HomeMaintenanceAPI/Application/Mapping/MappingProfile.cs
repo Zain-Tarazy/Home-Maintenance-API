@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using HomeMaintenanceAPI.Application.DTOs.Orders;
 using HomeMaintenanceAPI.Application.DTOs.ProviderProfiles;
 using HomeMaintenanceAPI.Application.DTOs.ProviderSubscriptions;
 using HomeMaintenanceAPI.Application.DTOs.Specialization;
@@ -43,6 +44,22 @@ namespace HomeMaintenanceAPI.Application.Mapping
             .ForMember(dest => dest.IsActive,
                 opt => opt.MapFrom(src =>
                         src.StartsAt <= DateTime.UtcNow && src.EndsAt > DateTime.UtcNow));
+
+            CreateMap<Order, OrderDto>()
+           .ForMember(dest => dest.CustomerName,
+                opt => opt.MapFrom(src => src.Customer.FullName))
+            .ForMember(dest => dest.CustomerPhoneNumber,
+                opt => opt.MapFrom(src => src.Customer.PhoneNumber))
+            .ForMember(dest => dest.SpecializationName,
+                opt => opt.MapFrom(src => src.Specialization.Name))
+            .ForMember(dest => dest.SelectedProviderName,
+                opt => opt.MapFrom(src => src.SelectedProviderProfile != null
+            ? src.SelectedProviderProfile.User.FullName
+            : null))
+            .ForMember(dest => dest.SelectedProviderPhoneNumber,
+                opt => opt.MapFrom(src => src.SelectedProviderProfile != null
+                        ? src.SelectedProviderProfile.User.PhoneNumber
+                        : null));
         }
     }
 }

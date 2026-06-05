@@ -110,7 +110,8 @@ builder.Services.AddScoped<ISubscriptionPaymentRequestService, SubscriptionPayme
 builder.Services.AddScoped<IProviderSubscriptionRepository, ProviderSubscriptionRepository>();
 builder.Services.AddScoped<IProviderSubscriptionService, ProviderSubscriptionService>();
 
-
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 
 
