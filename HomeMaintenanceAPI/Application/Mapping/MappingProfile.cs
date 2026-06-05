@@ -3,6 +3,7 @@ using HomeMaintenanceAPI.Application.DTOs;
 using HomeMaintenanceAPI.Application.DTOs.Orders;
 using HomeMaintenanceAPI.Application.DTOs.ProviderProfiles;
 using HomeMaintenanceAPI.Application.DTOs.ProviderSubscriptions;
+using HomeMaintenanceAPI.Application.DTOs.Ratings;
 using HomeMaintenanceAPI.Application.DTOs.Specialization;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPlans;
@@ -87,6 +88,12 @@ namespace HomeMaintenanceAPI.Application.Mapping
             .ForMember(dest => dest.CompletedOrdersCount,
                 opt => opt.MapFrom(src => src.ProviderProfile.SelectedOrders
                         .Count(o => o.Status == OrderStatus.Completed)));
+
+            CreateMap<Rating, RatingDto>()
+            .ForMember(dest => dest.CustomerName,
+                opt => opt.MapFrom(src => src.Customer.FullName))
+            .ForMember(dest => dest.ProviderName,
+                opt => opt.MapFrom(src => src.ProviderProfile.User.FullName));
         }
     }
 }

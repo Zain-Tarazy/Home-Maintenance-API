@@ -118,6 +118,9 @@ builder.Services.AddScoped<IProviderOfferService, ProviderOfferService>();
 
 builder.Services.AddScoped<IOrderCompletionService, OrderCompletionService>();
 
+builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+builder.Services.AddScoped<IRatingService, RatingService>();
+
 
 
 
