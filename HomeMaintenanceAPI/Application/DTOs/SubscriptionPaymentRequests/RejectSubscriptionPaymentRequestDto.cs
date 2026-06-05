@@ -2,5 +2,6 @@
 {
     public class RejectSubscriptionPaymentRequestDto
     {
+        public string? AdminNote { get; set; }
     }
 }

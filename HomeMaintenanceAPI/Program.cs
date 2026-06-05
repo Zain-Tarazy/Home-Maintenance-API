@@ -104,6 +104,13 @@ builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
 builder.Services.AddScoped<IProviderProfileRepository, ProviderProfileRepository>();
 builder.Services.AddScoped<IProviderProfileService, ProviderProfileService>();
 
+builder.Services.AddScoped<ISubscriptionPaymentRequestRepository, SubscriptionPaymentRequestRepository>();
+builder.Services.AddScoped<ISubscriptionPaymentRequestService, SubscriptionPaymentRequestService>();
+
+builder.Services.AddScoped<IProviderSubscriptionRepository, ProviderSubscriptionRepository>();
+builder.Services.AddScoped<IProviderSubscriptionService, ProviderSubscriptionService>();
+
+
 
 
 
