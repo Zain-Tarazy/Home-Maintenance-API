@@ -113,6 +113,9 @@ builder.Services.AddScoped<IProviderSubscriptionService, ProviderSubscriptionSer
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
+builder.Services.AddScoped<IProviderOfferRepository, ProviderOfferRepository>();
+builder.Services.AddScoped<IProviderOfferService, ProviderOfferService>();
+
 
 
 

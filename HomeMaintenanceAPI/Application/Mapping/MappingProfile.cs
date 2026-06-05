@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using HomeMaintenanceAPI.Application.DTOs;
 using HomeMaintenanceAPI.Application.DTOs.Orders;
 using HomeMaintenanceAPI.Application.DTOs.ProviderProfiles;
 using HomeMaintenanceAPI.Application.DTOs.ProviderSubscriptions;
@@ -6,6 +7,7 @@ using HomeMaintenanceAPI.Application.DTOs.Specialization;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPlans;
 using HomeMaintenanceAPI.Domain.Entities;
+using HomeMaintenanceAPI.Domain.Enums;
 
 namespace HomeMaintenanceAPI.Application.Mapping
 {
@@ -60,6 +62,31 @@ namespace HomeMaintenanceAPI.Application.Mapping
                 opt => opt.MapFrom(src => src.SelectedProviderProfile != null
                         ? src.SelectedProviderProfile.User.PhoneNumber
                         : null));
+
+            CreateMap<ProviderOffer, OfferDto>()
+            .ForMember(dest => dest.OrderDescription,
+                opt => opt.MapFrom(src => src.Order.Description))
+            .ForMember(dest => dest.OrderStatus,
+                opt => opt.MapFrom(src => src.Order.Status))
+            .ForMember(dest => dest.ProviderName,
+                opt => opt.MapFrom(src => src.ProviderProfile.User.FullName))
+            .ForMember(dest => dest.ProviderPhoneNumber,
+                opt => opt.MapFrom(src => src.ProviderProfile.User.PhoneNumber))
+            .ForMember(dest => dest.SpecializationName,
+                opt => opt.MapFrom(src => src.ProviderProfile.Specialization.Name))
+            .ForMember(dest => dest.CustomerName,
+                opt => opt.MapFrom(src => src.Order.Customer.FullName))
+            .ForMember(dest => dest.CustomerPhoneNumber,
+                opt => opt.MapFrom(src => src.Order.Customer.PhoneNumber))
+            .ForMember(dest => dest.RatingsCount,
+                opt => opt.MapFrom(src => src.ProviderProfile.Ratings.Count))
+            .ForMember(dest => dest.AverageRating,
+                opt => opt.MapFrom(src => src.ProviderProfile.Ratings.Any()
+                    ? src.ProviderProfile.Ratings.Average(r => r.Value)
+                    : 0))
+            .ForMember(dest => dest.CompletedOrdersCount,
+                opt => opt.MapFrom(src => src.ProviderProfile.SelectedOrders
+                        .Count(o => o.Status == OrderStatus.Completed)));
         }
     }
 }
