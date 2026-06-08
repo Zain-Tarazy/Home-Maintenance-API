@@ -12,13 +12,16 @@ namespace HomeMaintenanceAPI.Application.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
+        private readonly INotificationService _notificationService;
 
         public OrderCompletionService(
             IOrderRepository orderRepository,
-            IProviderProfileRepository providerProfileRepository)
+            IProviderProfileRepository providerProfileRepository,
+            INotificationService notificationService)
         {
             _orderRepository = orderRepository;
             _providerProfileRepository = providerProfileRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<ServiceResult<GenerateCompletionQrResponseDto>> GenerateCompletionQrAsync(
@@ -54,6 +57,13 @@ namespace HomeMaintenanceAPI.Application.Services
 
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveChangesAsync();
+
+            await _notificationService.CreateAndSendAsync(
+                order.SelectedProviderProfile!.UserId,
+                "Order completion pending",
+                "The customer generated a completion QR for the order.",
+                NotificationType.OrderCompletionPending,
+                relatedOrderId: order.Id);
 
             return ServiceResult<GenerateCompletionQrResponseDto>.Success(
                 new GenerateCompletionQrResponseDto
@@ -106,6 +116,13 @@ namespace HomeMaintenanceAPI.Application.Services
 
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveChangesAsync();
+
+            await _notificationService.CreateAndSendAsync(
+                order.CustomerId,
+                "Order completed",
+                "Your order has been completed successfully.",
+                NotificationType.OrderCompleted,
+                relatedOrderId: order.Id);
 
             return ServiceResult.Success();
 

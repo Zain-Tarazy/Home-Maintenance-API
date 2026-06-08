@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.Ratings;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -15,18 +16,27 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     {
         private readonly IRatingService _ratingService;
         private readonly IMapper _mapper;
+        private readonly IValidator<CreateRatingDto> _createValidator;
 
         public RatingsController(
             IRatingService ratingService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<CreateRatingDto> createValidator)
         {
             _ratingService = ratingService;
             _mapper = mapper;
+            _createValidator = createValidator;
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateRatingDto dto)
         {
+            var validationResult = await _createValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var userId = GetCurrentUserId();
 
             var result = await _ratingService.CreateAsync(userId, dto);

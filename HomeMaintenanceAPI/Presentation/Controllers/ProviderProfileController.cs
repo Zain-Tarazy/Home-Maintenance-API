@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.ProviderProfiles;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -15,18 +16,30 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     {
         private readonly IProviderProfileService _providerProfileService;
         private readonly IMapper _mapper;
+        private readonly IValidator<CreateProviderProfileDto> _createValidator;
+        private readonly IValidator<UpdateProviderProfileDto> _updateValidator;
 
         public ProviderProfileController(
             IProviderProfileService providerProfileService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<CreateProviderProfileDto> createValidator,
+            IValidator<UpdateProviderProfileDto> updateValidator)
         {
             _providerProfileService = providerProfileService;
             _mapper = mapper;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProviderProfileDto dto)
         {
+            var validationResult = await _createValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var userId = GetCurrentUserId();
 
             var result = await _providerProfileService.CreateAsync(userId, dto);
@@ -57,6 +70,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPut("me")]
         public async Task<IActionResult> UpdateMine(UpdateProviderProfileDto dto)
         {
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var userId = GetCurrentUserId();
 
             var result = await _providerProfileService.UpdateMineAsync(userId, dto);

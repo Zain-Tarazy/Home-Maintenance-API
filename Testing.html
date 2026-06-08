@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Notifications Test</title>
+</head>
+<body>
+    <h2>SignalR Notifications Test</h2>
+
+    <label>API Base URL:</label>
+    <input id="baseUrl" style="width: 400px;" value="https://localhost:7000" />
+    <br><br>
+
+    <label>Access Token:</label>
+    <input id="token" style="width: 800px;" placeholder="Paste access token only, without Bearer" />
+    <br><br>
+
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+
+    <h3>Status:</h3>
+    <pre id="status">Not connected</pre>
+
+    <h3>Notifications:</h3>
+    <ul id="notifications"></ul>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+
+    <script>
+        let connection = null;
+
+        async function connect() {
+            const baseUrl = document.getElementById("baseUrl").value;
+            const token = document.getElementById("token").value;
+
+            if (!token) {
+                alert("Paste access token first.");
+                return;
+            }
+
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl(baseUrl + "/hubs/notifications", {
+                    accessTokenFactory: () => token
+                })
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on("ReceiveNotification", function (notification) {
+                console.log("Notification received:", notification);
+
+                const li = document.createElement("li");
+                li.innerText =
+                    `[${notification.type}] ${notification.title} - ${notification.message}`;
+
+                document.getElementById("notifications").prepend(li);
+            });
+
+            connection.onreconnecting(function () {
+                document.getElementById("status").innerText = "Reconnecting...";
+            });
+
+            connection.onreconnected(function () {
+                document.getElementById("status").innerText = "Connected again.";
+            });
+
+            connection.onclose(function () {
+                document.getElementById("status").innerText = "Disconnected.";
+            });
+
+            try {
+                await connection.start();
+                document.getElementById("status").innerText = "Connected successfully.";
+                console.log("Connected to notifications hub.");
+            } catch (err) {
+                document.getElementById("status").innerText = "Connection failed.";
+                console.error(err);
+            }
+        }
+
+        async function disconnect() {
+            if (connection) {
+                await connection.stop();
+                connection = null;
+                document.getElementById("status").innerText = "Disconnected.";
+            }
+        }
+    </script>
+</body>
+</html>

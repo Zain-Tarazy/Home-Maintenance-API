@@ -9,6 +9,7 @@ namespace HomeMaintenanceAPI.Application.Services
 {
     public class SubscriptionPaymentRequestService : ISubscriptionPaymentRequestService
     {
+        private readonly INotificationService _notificationService;
         private readonly ISubscriptionPaymentRequestRepository _requestRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
         private readonly ISubscriptionPlanRepository _subscriptionPlanRepository;
@@ -16,13 +17,14 @@ namespace HomeMaintenanceAPI.Application.Services
         public SubscriptionPaymentRequestService(
             ISubscriptionPaymentRequestRepository requestRepository,
             IProviderProfileRepository providerProfileRepository,
-            ISubscriptionPlanRepository subscriptionPlanRepository)
+            ISubscriptionPlanRepository subscriptionPlanRepository,
+            INotificationService notificationService)
         {
             _requestRepository = requestRepository;
             _providerProfileRepository = providerProfileRepository;
             _subscriptionPlanRepository = subscriptionPlanRepository;
+            _notificationService = notificationService;
         }
-
         public async Task<ServiceResult<SubscriptionPaymentRequest>> CreateAsync(
             int userId,
             CreateSubscriptionPaymentRequestDto dto)
@@ -134,6 +136,12 @@ namespace HomeMaintenanceAPI.Application.Services
             await _requestRepository.UpdateAsync(request);
             await _requestRepository.SaveChangesAsync();
 
+            await _notificationService.CreateAndSendAsync(
+                request.ProviderProfile.UserId,
+                "Subscription approved",
+                "Your subscription payment request has been approved.",
+                NotificationType.SubscriptionApproved,
+                relatedSubscriptionPaymentRequestId: request.Id);
             // Later: create notification SubscriptionApproved
 
             var updatedRequest = await _requestRepository.GetByIdAsync(request.Id);
@@ -164,6 +172,12 @@ namespace HomeMaintenanceAPI.Application.Services
             await _requestRepository.UpdateAsync(request);
             await _requestRepository.SaveChangesAsync();
 
+            await _notificationService.CreateAndSendAsync(
+                request.ProviderProfile.UserId,
+                "Subscription rejected",
+                "Your subscription payment request has been rejected.",
+                NotificationType.SubscriptionRejected,
+                relatedSubscriptionPaymentRequestId: request.Id);
             // Later: create notification SubscriptionRejected
 
             var updatedRequest = await _requestRepository.GetByIdAsync(request.Id);

@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -15,18 +16,27 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     {
         private readonly ISubscriptionPaymentRequestService _requestService;
         private readonly IMapper _mapper;
+        private readonly IValidator<CreateSubscriptionPaymentRequestDto> _createValidator;
 
         public SubscriptionPaymentRequestsController(
             ISubscriptionPaymentRequestService requestService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<CreateSubscriptionPaymentRequestDto> createValidator)
         {
             _requestService = requestService;
             _mapper = mapper;
+            _createValidator = createValidator;
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateSubscriptionPaymentRequestDto dto)
         {
+            var validationResult = await _createValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var userId = GetCurrentUserId();
 
             var result = await _requestService.CreateAsync(userId, dto);

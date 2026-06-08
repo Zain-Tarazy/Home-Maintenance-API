@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.Specialization;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,13 +14,18 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     {
         private readonly ISpecializationService _specializationService;
         private readonly IMapper _mapper;
-
+        private readonly IValidator<CreateSpecializationDto> _createValidator;
+        private readonly IValidator<UpdateSpecializationDto> _updateValidator;
         public AdminSpecializationsController(
             ISpecializationService specializationService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<CreateSpecializationDto> createValidator,
+            IValidator<UpdateSpecializationDto> updateValidator)
         {
             _specializationService = specializationService;
             _mapper = mapper;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         [HttpGet]
@@ -35,6 +41,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateSpecializationDto dto)
         {
+            var validationResult = await _createValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var result = await _specializationService.CreateAsync(dto);
 
             if (!result.Succeeded)
@@ -48,6 +60,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateSpecializationDto dto)
         {
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var result = await _specializationService.UpdateAsync(id, dto);
 
             if (!result.Succeeded)

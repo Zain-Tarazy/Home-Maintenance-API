@@ -10,6 +10,10 @@
         OrderCompleted = 5,
         SubscriptionApproved = 6,
         SubscriptionRejected = 7,
-        OrderCancelled = 8
+        OrderCancelled = 8,
+        OfferRejected = 9,
+        OfferRejectedAutomatically = 10,
+        OfferCancelledByProvider = 11,
+        RatingReceived = 12
     }
 }

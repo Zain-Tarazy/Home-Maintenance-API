@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -15,13 +16,16 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     {
         private readonly ISubscriptionPaymentRequestService _requestService;
         private readonly IMapper _mapper;
+        private readonly IValidator<RejectSubscriptionPaymentRequestDto> _rejectValidator;
 
         public AdminSubscriptionPaymentRequestsController(
             ISubscriptionPaymentRequestService requestService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<RejectSubscriptionPaymentRequestDto> rejectValidator)
         {
             _requestService = requestService;
             _mapper = mapper;
+            _rejectValidator = rejectValidator;
         }
 
         [HttpGet("pending")]
@@ -52,6 +56,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPatch("{id}/reject")]
         public async Task<IActionResult> Reject(int id, RejectSubscriptionPaymentRequestDto dto)
         {
+            var validationResult = await _rejectValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var adminId = GetCurrentUserId();
 
             var result = await _requestService.RejectAsync(id, adminId, dto);

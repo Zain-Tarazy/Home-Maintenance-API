@@ -13,15 +13,18 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly IOrderRepository _orderRepository;
         private readonly ISpecializationRepository _specializationRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
+        private readonly INotificationService _notificationService;
 
         public OrderService(
             IOrderRepository orderRepository,
             ISpecializationRepository specializationRepository,
-            IProviderProfileRepository providerProfileRepository)
+            IProviderProfileRepository providerProfileRepository,
+            INotificationService notificationService)
         {
             _orderRepository = orderRepository;
             _specializationRepository = specializationRepository;
             _providerProfileRepository = providerProfileRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<ServiceResult<Order>> CreateAsync(int customerId, CreateOrderDto dto)
@@ -170,6 +173,22 @@ namespace HomeMaintenanceAPI.Application.Services
 
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveChangesAsync();
+
+            var providersToNotify = order.Offers
+                .Where(o => o.ProviderProfile != null)
+                .Select(o => o.ProviderProfile.UserId)
+                .Distinct()
+                .ToList();
+
+            foreach (var providerUserId in providersToNotify)
+            {
+                await _notificationService.CreateAndSendAsync(
+                    providerUserId,
+                    "Order cancelled",
+                    "The customer cancelled an order you submitted an offer for.",
+                    NotificationType.OrderCancelled,
+                    relatedOrderId: order.Id);
+            }
 
             return ServiceResult.Success();
         }

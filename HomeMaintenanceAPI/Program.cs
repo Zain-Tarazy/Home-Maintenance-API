@@ -1,19 +1,22 @@
-using Microsoft.AspNetCore.Authentication.Negotiate;
-using HomeMaintenanceAPI.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using HomeMaintenanceAPI.Application.Interfaces.Repositories;
-using HomeMaintenanceAPI.Infrastructure.Repositories;
-using HomeMaintenanceAPI.Application.Interfaces.Services;
-using HomeMaintenanceAPI.Infrastructure.Services;
-using HomeMaintenanceAPI.Application.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Microsoft.OpenApi.Models;
-using HomeMaintenanceAPI.Application.Mapping;
+using System.Text;
 using AutoMapper;
+using FluentValidation;
+using HomeMaintenanceAPI.Application.Interfaces.Repositories;
+using HomeMaintenanceAPI.Application.Interfaces.Services;
+using HomeMaintenanceAPI.Application.Mapping;
+using HomeMaintenanceAPI.Application.Services;
+using HomeMaintenanceAPI.Application.Validaotrs.Auth;
+using HomeMaintenanceAPI.Infrastructure.Data;
+using HomeMaintenanceAPI.Infrastructure.Repositories;
+using HomeMaintenanceAPI.Infrastructure.Services;
+using HomeMaintenanceAPI.Presentation.Hubs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,6 +64,23 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) &&
+                path.StartsWithSegments("/hubs/notifications"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -89,8 +109,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-builder.Services.AddScoped<IEmailService,SMTPEmailService>();
-//builder.Services.AddScoped<IEmailService, FakeEmailService>();
+//builder.Services.AddScoped<IEmailService,SMTPEmailService>();
+builder.Services.AddScoped<IEmailService, FakeEmailService>();
 
 builder.Services.AddScoped<IAuthService,AuthService>();
 builder.Services.AddScoped<ITokenService,TokenService>();
@@ -121,6 +141,31 @@ builder.Services.AddScoped<IOrderCompletionService, OrderCompletionService>();
 builder.Services.AddScoped<IRatingRepository, RatingRepository>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
+
+
+builder.Services.AddSignalR();
+
+
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .WithOrigins("null")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 
 
 
@@ -146,10 +191,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<NotificationsHub>("/hubs/notifications");
 
 app.Run();

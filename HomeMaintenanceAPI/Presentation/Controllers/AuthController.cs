@@ -3,6 +3,7 @@ using HomeMaintenanceAPI.Application.DTOs.Auth;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
 
 
 namespace HomeMaintenanceAPI.Presentation.Controllers
@@ -13,15 +14,37 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IValidator<RegisterDto> _registerValidator;
+        private readonly IValidator<LoginDto> _loginValidator;
+        private readonly IValidator<VerifyEmailDto> _verifyEmailValidator;
+        private readonly IValidator<ResendVerificationCodeDto> _resendValidator;
+        private readonly IValidator<RefreshTokenDto> _refreshValidator;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            IAuthService authService,
+            IValidator<RegisterDto> registerValidator,
+            IValidator<LoginDto> loginValidator,
+            IValidator<VerifyEmailDto> verifyEmailValidator,
+            IValidator<ResendVerificationCodeDto> resendValidator,
+            IValidator<RefreshTokenDto> refreshValidator)
         {
             _authService = authService;
+            _registerValidator = registerValidator;
+            _loginValidator = loginValidator;
+            _verifyEmailValidator = verifyEmailValidator;
+            _resendValidator = resendValidator;
+            _refreshValidator = refreshValidator;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
+            var validation = await _registerValidator.ValidateAsync(dto);
+
+            if (!validation.IsValid)
+                return BadRequest(validation.Errors.Select(e => e.ErrorMessage));
+
+
             var result = await _authService.RegisterAsync(dto);
 
             if (!result.Succeeded)
@@ -33,6 +56,13 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPost("verify-email")]
         public async Task<IActionResult> VerifyEmail(VerifyEmailDto dto)
         {
+
+            var validation  = await _verifyEmailValidator.ValidateAsync(dto);
+
+            if (!validation.IsValid)
+                return BadRequest(validation.Errors.Select(e=>e.ErrorMessage));
+
+
             var result = await _authService.VerifyEmailAsync(dto);
 
             if (!result.Succeeded)
@@ -44,6 +74,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPost("resend-verification-code")]
         public async Task<IActionResult> ResendVerificationCode(ResendVerificationCodeDto dto)
         {
+            var validation = await _resendValidator.ValidateAsync(dto);
+
+            if (!validation.IsValid)
+                return BadRequest(validation.Errors.Select(e => e.ErrorMessage));
+
+
             var result = await _authService.ResendVerificationCodeAsync(dto);
 
             if (!result.Succeeded)
@@ -55,6 +91,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
+            var validation = await _loginValidator.ValidateAsync(dto);
+             
+            if (!validation.IsValid)
+                return BadRequest(validation.Errors.Select(e => e.ErrorMessage));
+
+
             var result = await _authService.LoginAsync(dto);
 
             if (!result.Succeeded)
@@ -70,6 +112,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken(RefreshTokenDto dto)
         {
+            var validation = await _refreshValidator.ValidateAsync(dto);
+
+            if (!validation.IsValid)
+                return BadRequest(validation.Errors.Select(e => e.ErrorMessage));
+
+
             var result = await _authService.RefreshTokenAsync(dto);
 
             if (!result.Succeeded)

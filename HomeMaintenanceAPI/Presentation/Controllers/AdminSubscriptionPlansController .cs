@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPlans;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,13 +14,19 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     {
         private readonly ISubscriptionPlanService _subscriptionPlanService;
         private readonly IMapper _mapper;
+        private readonly IValidator<CreateSubscriptionPlanDto> _createValidator;
+        private readonly IValidator<UpdateSubscriptionPlanDto> _updateValidator;
 
         public AdminSubscriptionPlansController(
             ISubscriptionPlanService subscriptionPlanService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<CreateSubscriptionPlanDto> createValidator,
+            IValidator<UpdateSubscriptionPlanDto> updateValidator)
         {
             _subscriptionPlanService = subscriptionPlanService;
             _mapper = mapper;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         [HttpGet]
@@ -35,6 +42,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateSubscriptionPlanDto dto)
         {
+            var validationResult = await _createValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var result = await _subscriptionPlanService.CreateAsync(dto);
 
             if (!result.Succeeded)
@@ -48,6 +61,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateSubscriptionPlanDto dto)
         {
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var result = await _subscriptionPlanService.UpdateAsync(id, dto);
 
             if (!result.Succeeded)

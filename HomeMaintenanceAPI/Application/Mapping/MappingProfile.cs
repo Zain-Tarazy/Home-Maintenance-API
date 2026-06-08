@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using HomeMaintenanceAPI.Application.DTOs;
+using HomeMaintenanceAPI.Application.DTOs.Notifications;
 using HomeMaintenanceAPI.Application.DTOs.Orders;
 using HomeMaintenanceAPI.Application.DTOs.ProviderProfiles;
 using HomeMaintenanceAPI.Application.DTOs.ProviderSubscriptions;
@@ -94,6 +95,8 @@ namespace HomeMaintenanceAPI.Application.Mapping
                 opt => opt.MapFrom(src => src.Customer.FullName))
             .ForMember(dest => dest.ProviderName,
                 opt => opt.MapFrom(src => src.ProviderProfile.User.FullName));
+
+            CreateMap<Notification, NotificationDto>();
         }
     }
 }

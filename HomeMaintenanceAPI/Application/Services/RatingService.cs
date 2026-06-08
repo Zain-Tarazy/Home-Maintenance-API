@@ -12,15 +12,18 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly IRatingRepository _ratingRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
+        private readonly INotificationService _notificationService;
 
         public RatingService(
             IRatingRepository ratingRepository,
             IOrderRepository orderRepository,
-            IProviderProfileRepository providerProfileRepository)
+            IProviderProfileRepository providerProfileRepository,
+            INotificationService notificationService)
         {
             _ratingRepository = ratingRepository;
             _orderRepository = orderRepository;
             _providerProfileRepository = providerProfileRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<ServiceResult<Rating>> CreateAsync(int userId, CreateRatingDto dto)
@@ -58,6 +61,13 @@ namespace HomeMaintenanceAPI.Application.Services
             await _ratingRepository.SaveChangesAsync();
 
             var createdRating = await _ratingRepository.GetByIdWithDetailsAsync(rating.Id);
+
+            await _notificationService.CreateAndSendAsync(
+                 order.SelectedProviderProfile!.UserId,
+                 "New rating received",
+                 "A customer rated you after a completed order.",
+                 NotificationType.RatingReceived,
+                 relatedOrderId: order.Id);
 
             return ServiceResult<Rating>.Success(createdRating!);
         }

@@ -12,15 +12,18 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly IProviderOfferRepository _offerRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
+        private readonly INotificationService _notificationService;
 
         public ProviderOfferService(
             IProviderOfferRepository offerRepository,
             IOrderRepository orderRepository,
-            IProviderProfileRepository providerProfileRepository)
+            IProviderProfileRepository providerProfileRepository,
+            INotificationService notificationService)
         {
             _offerRepository = offerRepository;
             _orderRepository = orderRepository;
             _providerProfileRepository = providerProfileRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<ServiceResult<ProviderOffer>> CreateAsync(int userId, CreateOfferDto dto)
@@ -73,6 +76,14 @@ namespace HomeMaintenanceAPI.Application.Services
             await _offerRepository.SaveChangesAsync();
 
             var createdOffer = await _offerRepository.GetByIdWithDetailsAsync(offer.Id);
+
+            await _notificationService.CreateAndSendAsync(
+                order.CustomerId,
+                "New offer received",
+                "A provider submitted an offer for your order.",
+                NotificationType.NewOfferReceived,
+                relatedOrderId: order.Id,
+                relatedOfferId: createdOffer!.Id);
 
             return ServiceResult<ProviderOffer>.Success(createdOffer!);
 
@@ -163,6 +174,14 @@ namespace HomeMaintenanceAPI.Application.Services
             await _offerRepository.UpdateAsync(offer);
             await _offerRepository.SaveChangesAsync();
 
+            await _notificationService.CreateAndSendAsync(
+                offer.Order.CustomerId,
+                "Offer cancelled",
+                "A provider cancelled their offer on your order.",
+                NotificationType.OfferCancelledByProvider,
+                relatedOrderId: offer.OrderId,
+                relatedOfferId: offer.Id);
+
             return ServiceResult.Success();
         }
 
@@ -187,6 +206,14 @@ namespace HomeMaintenanceAPI.Application.Services
 
             await _offerRepository.UpdateAsync(offer);
             await _offerRepository.SaveChangesAsync();
+
+            await _notificationService.CreateAndSendAsync(
+                offer.ProviderProfile.UserId,
+                "Offer rejected",
+                "The customer rejected your offer.",
+                NotificationType.OfferRejected,
+                relatedOrderId: offer.OrderId,
+                relatedOfferId: offer.Id);
 
             return ServiceResult.Success();
         }
@@ -221,6 +248,14 @@ namespace HomeMaintenanceAPI.Application.Services
 
             await _offerRepository.UpdateAsync(offer);
             await _offerRepository.SaveChangesAsync();
+
+            await _notificationService.CreateAndSendAsync(
+                offer.ProviderProfile.UserId,
+                "Offer accepted for inspection",
+                "Your offer was accepted for inspection.",
+                NotificationType.OfferAcceptedForInspection,
+                relatedOrderId: order.Id,
+                relatedOfferId: offer.Id);
 
             var updatedOffer = await _offerRepository.GetByIdWithDetailsAsync(offer.Id);
 
@@ -259,6 +294,14 @@ namespace HomeMaintenanceAPI.Application.Services
 
             await _offerRepository.UpdateAsync(offer);
             await _offerRepository.SaveChangesAsync();
+
+            await _notificationService.CreateAndSendAsync(
+                offer.ProviderProfile.UserId,
+                "Offer rejected after inspection",
+                "The customer rejected your offer after inspection.",
+                NotificationType.OfferRejectedAfterInspection,
+                relatedOrderId: order.Id,
+                relatedOfferId: offer.Id);
 
             var updatedOffer = await _offerRepository.GetByIdWithDetailsAsync(offer.Id);
 
@@ -306,6 +349,17 @@ namespace HomeMaintenanceAPI.Application.Services
             await _offerRepository.UpdateAsync(offer);
             await _offerRepository.UpdateRangeAsync(otherPendingOffers);
             await _offerRepository.SaveChangesAsync();
+
+            foreach (var pendingOffer in otherPendingOffers)
+            {
+                await _notificationService.CreateAndSendAsync(
+                    pendingOffer.ProviderProfile.UserId,
+                    "Offer rejected automatically",
+                    "The customer continued with another provider for this order.",
+                    NotificationType.OfferRejectedAutomatically,
+                    relatedOrderId: order.Id,
+                    relatedOfferId: pendingOffer.Id);
+            }
 
             var updatedOffer = await _offerRepository.GetByIdWithDetailsAsync(offer.Id);
 

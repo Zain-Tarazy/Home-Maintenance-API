@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs;
 using HomeMaintenanceAPI.Application.DTOs.Offers;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
@@ -17,18 +18,30 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     {
         private readonly IProviderOfferService _offerService;
         private readonly IMapper _mapper;
+        private readonly IValidator<CreateOfferDto> _createOfferValidator;
+        private readonly IValidator<UpdateOfferDto> _updateOfferValidator;
 
         public OffersController(
             IProviderOfferService offerService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<CreateOfferDto> createOfferValidator,
+            IValidator<UpdateOfferDto> updateOfferValidator)
         {
             _offerService = offerService;
             _mapper = mapper;
+            _createOfferValidator = createOfferValidator;
+            _updateOfferValidator = updateOfferValidator;
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateOfferDto dto)
         {
+            var validationResult = await _createOfferValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var userId = GetCurrentUserId();
 
             var result = await _offerService.CreateAsync(userId, dto);
@@ -85,6 +98,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateOfferDto dto)
         {
+            var validationResult = await _updateOfferValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var userId = GetCurrentUserId();
 
             var result = await _offerService.UpdateAsync(userId, id, dto);

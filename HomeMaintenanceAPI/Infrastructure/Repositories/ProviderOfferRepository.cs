@@ -59,6 +59,8 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
         public async Task<List<ProviderOffer>> GetPendingOffersForOrderExceptAsync(int orderId, int excludedOfferId)
         {
             return await _context.ProviderOffers
+                .Include(o => o.ProviderProfile)
+                    .ThenInclude(p => p.User)
                 .Where(o =>
                     o.OrderId == orderId &&
                     o.Id != excludedOfferId &&

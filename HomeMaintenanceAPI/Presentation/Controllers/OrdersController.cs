@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.Orders;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -16,18 +17,30 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IMapper _mapper;
+        private readonly IValidator<CreateOrderDto> _createOrderValidator;
+        private readonly IValidator<UpdateOrderDto> _updateOrderValidator;
 
         public OrdersController(
             IOrderService orderService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<CreateOrderDto> createOrderValidator,
+            IValidator<UpdateOrderDto> updateOrderValidator)
         {
             _orderService = orderService;
             _mapper = mapper;
+            _createOrderValidator = createOrderValidator;
+            _updateOrderValidator = updateOrderValidator;   
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateOrderDto dto)
         {
+            var validationResult = await _createOrderValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var userId = GetCurrentUserId();
 
             var result = await _orderService.CreateAsync(userId, dto);
@@ -77,6 +90,12 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateOrderDto dto)
         {
+            var validationResult = await _updateOrderValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+
             var userId = GetCurrentUserId();
 
             var result = await _orderService.UpdateAsync(userId, id, dto);

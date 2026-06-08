@@ -19,8 +19,10 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
         {
             return await _context.Orders
                 .Include(o => o.Offers)
+                    .ThenInclude(of => of.ProviderProfile)
+                        .ThenInclude(p => p.User)
                 .FirstOrDefaultAsync(o => o.Id == id);
-        }
+        } 
 
         public async Task<Order?> GetByIdWithDetailsAsync(int id)
         {
