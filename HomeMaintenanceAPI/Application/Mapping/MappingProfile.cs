@@ -10,6 +10,7 @@ using HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPlans;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
+using HomeMaintenanceAPI.Application.DTOs.Admin;
 
 namespace HomeMaintenanceAPI.Application.Mapping
 {
@@ -97,6 +98,43 @@ namespace HomeMaintenanceAPI.Application.Mapping
                 opt => opt.MapFrom(src => src.ProviderProfile.User.FullName));
 
             CreateMap<Notification, NotificationDto>();
+
+            CreateMap<User, AdminUserDto>()
+            .ForMember(dest => dest.HasProviderProfile,
+                opt => opt.MapFrom(src => src.ProviderProfile != null));
+
+            CreateMap<ProviderProfile, AdminProviderDto>()
+                .ForMember(dest => dest.ProviderProfileId,
+                    opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserId,
+                    opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.FullName,
+                    opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.Email,
+                    opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.PhoneNumber,
+                    opt => opt.MapFrom(src => src.User.PhoneNumber))
+                .ForMember(dest => dest.SpecializationName,
+                    opt => opt.MapFrom(src => src.Specialization.Name))
+                .ForMember(dest => dest.HasActiveSubscription,
+                    opt => opt.MapFrom(src => src.Subscriptions.Any(s =>
+                        s.StartsAt <= DateTime.UtcNow && s.EndsAt > DateTime.UtcNow)))
+                .ForMember(dest => dest.ActiveSubscriptionEndsAt,
+                    opt => opt.MapFrom(src => src.Subscriptions
+                        .Where(s => s.StartsAt <= DateTime.UtcNow && s.EndsAt > DateTime.UtcNow)
+                        .OrderByDescending(s => s.EndsAt)
+                        .Select(s => (DateTime?)s.EndsAt)
+                        .FirstOrDefault()));
+
+            CreateMap<Order, AdminOrderDto>()
+                .ForMember(dest => dest.CustomerName,
+                    opt => opt.MapFrom(src => src.Customer.FullName))
+                .ForMember(dest => dest.SpecializationName,
+                    opt => opt.MapFrom(src => src.Specialization.Name))
+                .ForMember(dest => dest.SelectedProviderName,
+                    opt => opt.MapFrom(src => src.SelectedProviderProfile != null
+                        ? src.SelectedProviderProfile.User.FullName
+                        : null));
         }
     }
 }
