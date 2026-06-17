@@ -79,5 +79,15 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return int.Parse(userIdClaim!);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var requests = await _requestService.GetAllAsync();
+
+            var response = _mapper.Map<List<SubscriptionPaymentRequestDto>>(requests);
+
+            return Ok(response);
+        }
     }
 }

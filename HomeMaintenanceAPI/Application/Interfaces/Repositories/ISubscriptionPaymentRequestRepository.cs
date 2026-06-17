@@ -6,6 +6,8 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
     {
         Task<List<SubscriptionPaymentRequest>> GetByProviderProfileIdAsync(int providerProfileId);
 
+        Task<List<SubscriptionPaymentRequest>> GetAllAsync();
+
         Task<List<SubscriptionPaymentRequest>> GetPendingAsync();
 
         Task<SubscriptionPaymentRequest?> GetByIdAsync(int id);

@@ -77,6 +77,7 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .Include(o => o.Specialization)
                 .Include(o => o.SelectedProviderProfile)
                     .ThenInclude(p => p!.User)
+                .Include(o => o.Rating)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
         }

@@ -39,6 +39,17 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .OrderBy(r => r.CreatedAt)
                 .ToListAsync();
         }
+        public async Task<List<SubscriptionPaymentRequest>> GetAllAsync()
+        {
+            return await _context.SubscriptionPaymentRequests
+                .AsNoTracking()
+                .Include(r => r.ProviderProfile)
+                    .ThenInclude(p => p.User)
+                .Include(r => r.SubscriptionPlan)
+                .Include(r => r.ReviewedByAdmin)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
 
         public async Task<SubscriptionPaymentRequest?> GetByIdAsync(int id)
         {

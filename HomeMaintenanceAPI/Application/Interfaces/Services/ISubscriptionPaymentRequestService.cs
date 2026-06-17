@@ -14,6 +14,8 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
 
         Task<List<SubscriptionPaymentRequest>> GetPendingAsync();
 
+        Task<List<SubscriptionPaymentRequest>> GetAllAsync();
+
         Task<ServiceResult<SubscriptionPaymentRequest>> ApproveAsync(int requestId, int adminId);
 
         Task<ServiceResult<SubscriptionPaymentRequest>> RejectAsync(

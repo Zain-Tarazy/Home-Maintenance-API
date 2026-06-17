@@ -134,7 +134,17 @@ namespace HomeMaintenanceAPI.Application.Mapping
                 .ForMember(dest => dest.SelectedProviderName,
                     opt => opt.MapFrom(src => src.SelectedProviderProfile != null
                         ? src.SelectedProviderProfile.User.FullName
-                        : null));
+                        : null))
+                .ForMember(dest => dest.HasRating,
+                    opt => opt.MapFrom(src => src.Rating != null))
+                .ForMember(dest => dest.RatingValue,
+                    opt => opt.MapFrom(src => src.Rating != null
+                        ? src.Rating.Value
+                        : (int?)null))
+                .ForMember(dest => dest.RatingCreatedAt,
+                    opt => opt.MapFrom(src => src.Rating != null
+                        ? src.Rating.CreatedAt
+                        : (DateTime?)null));
         }
     }
 }

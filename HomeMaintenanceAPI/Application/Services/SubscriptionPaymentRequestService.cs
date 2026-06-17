@@ -99,6 +99,10 @@ namespace HomeMaintenanceAPI.Application.Services
         {
             return await _requestRepository.GetPendingAsync();
         }
+        public async Task<List<SubscriptionPaymentRequest>> GetAllAsync()
+        {
+            return await _requestRepository.GetAllAsync();
+        }
 
         public async Task<ServiceResult<SubscriptionPaymentRequest>> ApproveAsync(int requestId, int adminId)
         {

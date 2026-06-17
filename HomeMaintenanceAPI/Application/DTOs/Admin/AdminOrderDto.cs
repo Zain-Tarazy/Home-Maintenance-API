@@ -25,5 +25,11 @@ namespace HomeMaintenanceAPI.Application.DTOs.Admin
         public DateTime CreatedAt { get; set; }
 
         public DateTime? CompletedAt { get; set; }
+
+        public bool HasRating { get; set; }
+
+        public int? RatingValue { get; set; }
+
+        public DateTime? RatingCreatedAt { get; set; }
     }
 }
