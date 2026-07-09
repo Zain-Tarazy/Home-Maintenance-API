@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using FluentValidation;
+using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -28,12 +29,19 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
             _rejectValidator = rejectValidator;
         }
 
-        [HttpGet("pending")]
-        public async Task<IActionResult> GetPending()
-        {
-            var requests = await _requestService.GetPendingAsync();
 
-            var response = _mapper.Map<List<SubscriptionPaymentRequestDto>>(requests);
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPending([FromQuery] PaginationParams paginationParams)
+        {
+            var requests = await _requestService.GetPendingForAdminAsync(paginationParams);
+
+            var response = new PagedResult<SubscriptionPaymentRequestDto>
+            {
+                Items = _mapper.Map<List<SubscriptionPaymentRequestDto>>(requests.Items),
+                PageNumber = requests.PageNumber,
+                PageSize = requests.PageSize,
+                TotalCount = requests.TotalCount
+            };
 
             return Ok(response);
         }
@@ -81,11 +89,17 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
         {
-            var requests = await _requestService.GetAllAsync();
+            var requests = await _requestService.GetAllForAdminAsync(paginationParams);
 
-            var response = _mapper.Map<List<SubscriptionPaymentRequestDto>>(requests);
+            var response = new PagedResult<SubscriptionPaymentRequestDto>
+            {
+                Items = _mapper.Map<List<SubscriptionPaymentRequestDto>>(requests.Items),
+                PageNumber = requests.PageNumber,
+                PageSize = requests.PageSize,
+                TotalCount = requests.TotalCount
+            };
 
             return Ok(response);
         }

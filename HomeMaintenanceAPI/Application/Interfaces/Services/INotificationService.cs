@@ -1,14 +1,15 @@
 ﻿using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Services
 {
     public interface INotificationService
     {
-        Task<ServiceResult<List<Notification>>> GetMineAsync(int userId);
+        Task<PagedResult<Notification>> GetMineAsync(int userId, PaginationParams paginationParams);
 
-        Task<ServiceResult> MarkAsReadAsync(int userId, int notificationId);
+        Task<ServiceResult> MarkAsReadAsync(int notificationId, int userId);
 
         Task<ServiceResult> MarkAllAsReadAsync(int userId);
 

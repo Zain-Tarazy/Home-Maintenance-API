@@ -214,6 +214,47 @@ namespace HomeMaintenanceAPI.Application.Services
             return ServiceResult.Success();
         }
 
+        public async Task<ServiceResult<CurrentUserDto>> GetCurrentUserAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdWithProviderDetailsAsync(userId);
+
+            if (user == null)
+                return ServiceResult<CurrentUserDto>.Failure("User not found.");
+
+            var now = DateTime.UtcNow;
+
+            var providerProfile = user.ProviderProfile;
+
+            var activeSubscription = providerProfile?.Subscriptions
+                .Where(s => s.StartsAt <= now && s.EndsAt > now)
+                .OrderByDescending(s => s.EndsAt)
+                .FirstOrDefault();
+
+            var dto = new CurrentUserDto
+            {
+                UserId = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role.ToString(),
+
+                HasProviderProfile = providerProfile != null,
+                ProviderProfileId = providerProfile?.Id,
+
+                SpecializationId = providerProfile?.SpecializationId,
+                SpecializationName = providerProfile?.Specialization?.Name,
+
+                HasActiveSubscription = activeSubscription != null,
+                ActiveSubscriptionEndsAt = activeSubscription?.EndsAt
+            };
+
+            return ServiceResult<CurrentUserDto>.Success(dto);
+        }
+
+
+
+
+
 
 
         //------------------

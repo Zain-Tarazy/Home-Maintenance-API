@@ -6,7 +6,7 @@ using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
 
-namespace HomeMaintenanceAPI.Infrastructure.Services
+namespace HomeMaintenanceAPI.Application.Services
 {
     public class NotificationService : INotificationService
     {
@@ -15,6 +15,7 @@ namespace HomeMaintenanceAPI.Infrastructure.Services
         private readonly IMapper _mapper;
 
         public NotificationService(
+
             INotificationRepository notificationRepository,
             INotificationSender notificationSender,
             IMapper mapper)
@@ -24,11 +25,13 @@ namespace HomeMaintenanceAPI.Infrastructure.Services
             _mapper = mapper;
         }
 
-        public async Task<ServiceResult<List<Notification>>> GetMineAsync(int userId)
+        public async Task<PagedResult<Notification>> GetMineAsync(
+            int userId,
+            PaginationParams paginationParams)
         {
-            var notifications = await _notificationRepository.GetByUserIdAsync(userId);
-
-            return ServiceResult<List<Notification>>.Success(notifications);
+            return await _notificationRepository.GetByUserIdAsync(
+                userId,
+                paginationParams);
         }
 
         public async Task<ServiceResult> MarkAsReadAsync(int userId, int notificationId)

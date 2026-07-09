@@ -8,7 +8,7 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
     {
         Task<ServiceResult<ProviderOffer>> CreateAsync(int userId, CreateOfferDto dto);
 
-        Task<ServiceResult<List<ProviderOffer>>> GetMineAsync(int userId);
+        Task<ServiceResult<PagedResult<ProviderOffer>>> GetMineAsync(int providerUserId, PaginationParams paginationParams);
 
         Task<ServiceResult<List<ProviderOffer>>> GetByOrderIdAsync(int userId, int orderId);
 

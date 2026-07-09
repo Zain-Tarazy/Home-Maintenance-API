@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Domain.Entities;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Domain.Entities;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
 {
@@ -6,9 +7,9 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
     {
         Task<List<SubscriptionPaymentRequest>> GetByProviderProfileIdAsync(int providerProfileId);
 
-        Task<List<SubscriptionPaymentRequest>> GetAllAsync();
+        Task<PagedResult<SubscriptionPaymentRequest>> GetAllAsync(PaginationParams paginationParams);
 
-        Task<List<SubscriptionPaymentRequest>> GetPendingAsync();
+        Task<PagedResult<SubscriptionPaymentRequest>> GetPendingAsync(PaginationParams paginationParams);
 
         Task<SubscriptionPaymentRequest?> GetByIdAsync(int id);
 

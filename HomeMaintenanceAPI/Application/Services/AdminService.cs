@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Application.DTOs.Admin;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Application.DTOs.Admin;
 using HomeMaintenanceAPI.Application.Interfaces.Repositories;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -30,19 +31,19 @@ namespace HomeMaintenanceAPI.Application.Services
             };
         }
 
-        public async Task<List<User>> GetUsersAsync()
+        public async Task<PagedResult<User>> GetUsersAsync(PaginationParams paginationParams)
         {
-            return await _adminRepository.GetUsersAsync();
+            return await _adminRepository.GetUsersAsync(paginationParams);
         }
 
-        public async Task<List<ProviderProfile>> GetProvidersAsync()
+        public async Task<PagedResult<ProviderProfile>> GetProvidersAsync(PaginationParams paginationParams)
         {
-            return await _adminRepository.GetProvidersAsync();
+            return await _adminRepository.GetProvidersAsync(paginationParams);
         }
 
-        public async Task<List<Order>> GetOrdersAsync()
+        public async Task<PagedResult<Order>> GetOrdersAsync(PaginationParams paginationParams)
         {
-            return await _adminRepository.GetOrdersAsync();
+            return await _adminRepository.GetOrdersAsync(paginationParams);
         }
     }
 }

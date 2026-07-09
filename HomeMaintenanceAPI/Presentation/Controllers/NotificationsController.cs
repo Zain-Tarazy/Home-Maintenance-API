@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Application.DTOs.Notifications;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -25,13 +26,21 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetMine()
+        public async Task<IActionResult> GetMine([FromQuery] PaginationParams paginationParams)
         {
             var userId = GetCurrentUserId();
 
-            var result = await _notificationService.GetMineAsync(userId);
+            var notifications = await _notificationService.GetMineAsync(
+                userId,
+                paginationParams);
 
-            var response = _mapper.Map<List<NotificationDto>>(result.Data!);
+            var response = new PagedResult<NotificationDto>
+            {
+                Items = _mapper.Map<List<NotificationDto>>(notifications.Items),
+                PageNumber = notifications.PageNumber,
+                PageSize = notifications.PageSize,
+                TotalCount = notifications.TotalCount
+            };
 
             return Ok(response);
         }

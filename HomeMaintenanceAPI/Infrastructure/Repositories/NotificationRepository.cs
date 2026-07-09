@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Application.Interfaces.Repositories;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Application.Interfaces.Repositories;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -14,13 +15,29 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Notification>> GetByUserIdAsync(int userId)
+        public async Task<PagedResult<Notification>> GetByUserIdAsync(
+            int userId,
+            PaginationParams paginationParams)
         {
-            return await _context.Notifications
+            var query = _context.Notifications
                 .AsNoTracking()
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<Notification>(
+                items,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount
+            );
         }
 
         public async Task<Notification?> GetByIdAsync(int id)

@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Domain.Entities;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
@@ -17,10 +18,10 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
 
         Task<int> CountActiveSubscriptionsAsync();
 
-        Task<List<User>> GetUsersAsync();
+        Task<PagedResult<User>> GetUsersAsync(PaginationParams paginationParams);
 
-        Task<List<ProviderProfile>> GetProvidersAsync();
+        Task<PagedResult<ProviderProfile>> GetProvidersAsync(PaginationParams paginationParams);
 
-        Task<List<Order>> GetOrdersAsync();
+        Task<PagedResult<Order>> GetOrdersAsync(PaginationParams paginationParams);
     }
 }

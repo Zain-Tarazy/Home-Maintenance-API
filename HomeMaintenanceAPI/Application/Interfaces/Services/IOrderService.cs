@@ -8,7 +8,7 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
     {
         Task<ServiceResult<Order>> CreateAsync(int customerId, CreateOrderDto dto);
 
-        Task<ServiceResult<List<Order>>> GetMineAsync(int customerId);
+        Task<ServiceResult<PagedResult<Order>>> GetMineAsync(int customerId, PaginationParams paginationParams);
 
         Task<ServiceResult<Order>> GetByIdAsync(int currentUserId, int orderId);
 
@@ -16,8 +16,8 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
 
         Task<ServiceResult> CancelAsync(int customerId, int orderId);
 
-        Task<ServiceResult<List<Order>>> GetAvailableForProviderAsync(int userId);
+        Task<ServiceResult<PagedResult<Order>>> GetAvailableForProviderAsync(int userId, PaginationParams paginationParams);
 
-        Task<ServiceResult<List<Order>>> GetAssignedForProviderAsync(int userId);
+        Task<ServiceResult<PagedResult<Order>>> GetAssignedForProviderAsync(int userId, PaginationParams paginationParams);
     }
 }

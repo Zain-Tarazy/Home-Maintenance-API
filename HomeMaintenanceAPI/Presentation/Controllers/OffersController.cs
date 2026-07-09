@@ -1,8 +1,10 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using FluentValidation;
+using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Application.DTOs;
 using HomeMaintenanceAPI.Application.DTOs.Offers;
+using HomeMaintenanceAPI.Application.Helpers;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
@@ -56,20 +58,26 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         }
 
         [HttpGet("my")]
-        public async Task<IActionResult> GetMine()
+        public async Task<IActionResult> GetMine([FromQuery] PaginationParams paginationParams)
         {
             var userId = GetCurrentUserId();
 
-            var result = await _offerService.GetMineAsync(userId);
+            var result = await _offerService.GetMineAsync(userId, paginationParams);
 
             if (!result.Succeeded)
                 return BadRequest(result.Error);
 
-            var response = _mapper.Map<List<OfferDto>>(result.Data!);
-
-            for (int i = 0; i < response.Count; i++)
+            var response = new PagedResult<OfferDto>
             {
-                ApplyPhoneVisibility(response[i], result.Data![i], userId);
+                Items = _mapper.Map<List<OfferDto>>(result.Data!.Items),
+                PageNumber = result.Data.PageNumber,
+                PageSize = result.Data.PageSize,
+                TotalCount = result.Data.TotalCount
+            };
+
+            foreach (var offer in response.Items)
+            {
+                PhoneVisibilityHelper.ApplyForProviderViewingOwnOffer(offer);
             }
 
             return Ok(response);

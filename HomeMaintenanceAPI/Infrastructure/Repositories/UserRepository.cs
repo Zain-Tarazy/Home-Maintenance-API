@@ -56,6 +56,16 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
         }
 
+        public async Task<User?> GetByIdWithProviderDetailsAsync(int userId)
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.ProviderProfile)
+                    .ThenInclude(p => p!.Specialization)
+                .Include(u => u.ProviderProfile)
+                    .ThenInclude(p => p!.Subscriptions)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

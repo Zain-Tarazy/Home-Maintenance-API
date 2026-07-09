@@ -11,6 +11,7 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
         Task<User> AddAsync(User user);
         Task UpdateAsync(User user);
         Task<User?> GetByRefreshTokenAsync(string refreshToken);
+        Task<User?> GetByIdWithProviderDetailsAsync(int userId);
         Task SaveChangesAsync();
     }
 }

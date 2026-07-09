@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Application.DTOs.Orders;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -26,22 +27,26 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         }
 
         [HttpGet("available")]
-        public async Task<IActionResult> GetAvailable()
+        public async Task<IActionResult> GetAvailableOrders([FromQuery] PaginationParams paginationParams)
         {
             var userId = GetCurrentUserId();
 
-            var result = await _orderService.GetAvailableForProviderAsync(userId);
+            var result = await _orderService.GetAvailableForProviderAsync(userId, paginationParams);
 
             if (!result.Succeeded)
                 return BadRequest(result.Error);
 
-            var response = _mapper.Map<List<OrderDto>>(result.Data!);
-
-            foreach (var order in response)
+            var response = new PagedResult<OrderDto>
             {
-                order.CustomerName = null;
+                Items = _mapper.Map<List<OrderDto>>(result.Data!.Items),
+                PageNumber = result.Data.PageNumber,
+                PageSize = result.Data.PageSize,
+                TotalCount = result.Data.TotalCount
+            };
+
+            foreach (var order in response.Items)
+            {
                 order.CustomerPhoneNumber = null;
-                order.SelectedProviderName = null;
                 order.SelectedProviderPhoneNumber = null;
             }
 
@@ -49,22 +54,24 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         }
 
         [HttpGet("assigned")]
-        public async Task<IActionResult> GetAssigned()
+        public async Task<IActionResult> GetAssignedOrders([FromQuery] PaginationParams paginationParams)
         {
             var userId = GetCurrentUserId();
 
-            var result = await _orderService.GetAssignedForProviderAsync(userId);
+            var result = await _orderService.GetAssignedForProviderAsync(userId, paginationParams);
 
             if (!result.Succeeded)
                 return BadRequest(result.Error);
 
-            var response = _mapper.Map<List<OrderDto>>(result.Data!);
-
-            for (int i = 0; i < response.Count; i++)
+            var response = new PagedResult<OrderDto>
             {
-                ApplyPhoneVisibility(response[i], result.Data![i], userId);
-            }
+                Items = _mapper.Map<List<OrderDto>>(result.Data!.Items),
+                PageNumber = result.Data.PageNumber,
+                PageSize = result.Data.PageSize,
+                TotalCount = result.Data.TotalCount
+            };
 
+           
             return Ok(response);
         }
 

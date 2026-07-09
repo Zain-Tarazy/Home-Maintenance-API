@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Application.DTOs.Admin;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Application.DTOs.Admin;
 using HomeMaintenanceAPI.Domain.Entities;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Services
@@ -7,10 +8,10 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
     {
         Task<AdminDashboardSummaryDto> GetDashboardSummaryAsync();
 
-        Task<List<User>> GetUsersAsync();
+        Task<PagedResult<User>> GetUsersAsync(PaginationParams paginationParams);
 
-        Task<List<ProviderProfile>> GetProvidersAsync();
+        Task<PagedResult<ProviderProfile>> GetProvidersAsync(PaginationParams paginationParams);
 
-        Task<List<Order>> GetOrdersAsync();
+        Task<PagedResult<Order>> GetOrdersAsync(PaginationParams paginationParams);
     }
 }

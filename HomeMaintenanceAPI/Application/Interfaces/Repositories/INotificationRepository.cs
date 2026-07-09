@@ -1,10 +1,12 @@
-﻿using HomeMaintenanceAPI.Domain.Entities;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Domain.Entities;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
 {
     public interface INotificationRepository
     {
-        Task<List<Notification>> GetByUserIdAsync(int userId);
+        Task<PagedResult<Notification>> GetByUserIdAsync(int userId, PaginationParams paginationParams);
 
         Task<Notification?> GetByIdAsync(int id);
 

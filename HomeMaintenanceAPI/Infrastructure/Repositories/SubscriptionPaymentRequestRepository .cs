@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Application.Interfaces.Repositories;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Application.Interfaces.Repositories;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
 using HomeMaintenanceAPI.Infrastructure.Data;
@@ -28,27 +29,56 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<SubscriptionPaymentRequest>> GetPendingAsync()
+        public async Task<PagedResult<SubscriptionPaymentRequest>> GetPendingAsync(PaginationParams paginationParams)
         {
-            return await _context.SubscriptionPaymentRequests
+            var query = _context.SubscriptionPaymentRequests
                 .AsNoTracking()
                 .Include(r => r.ProviderProfile)
                     .ThenInclude(p => p.User)
                 .Include(r => r.SubscriptionPlan)
+                .Include(r => r.ReviewedByAdmin)
                 .Where(r => r.Status == SubscriptionPaymentRequestStatus.Pending)
-                .OrderBy(r => r.CreatedAt)
+                .OrderByDescending(r => r.CreatedAt)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<SubscriptionPaymentRequest>(
+                items,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount
+            );
         }
-        public async Task<List<SubscriptionPaymentRequest>> GetAllAsync()
+        public async Task<PagedResult<SubscriptionPaymentRequest>> GetAllAsync(PaginationParams paginationParams)
         {
-            return await _context.SubscriptionPaymentRequests
+            var query = _context.SubscriptionPaymentRequests
                 .AsNoTracking()
                 .Include(r => r.ProviderProfile)
                     .ThenInclude(p => p.User)
                 .Include(r => r.SubscriptionPlan)
                 .Include(r => r.ReviewedByAdmin)
                 .OrderByDescending(r => r.CreatedAt)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<SubscriptionPaymentRequest>(
+                items,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount
+            );
         }
 
         public async Task<SubscriptionPaymentRequest?> GetByIdAsync(int id)

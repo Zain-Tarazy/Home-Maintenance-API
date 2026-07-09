@@ -95,13 +95,14 @@ namespace HomeMaintenanceAPI.Application.Services
             return ServiceResult<List<SubscriptionPaymentRequest>>.Success(requests);
         }
 
-        public async Task<List<SubscriptionPaymentRequest>> GetPendingAsync()
+        public async Task<PagedResult<SubscriptionPaymentRequest>> GetAllForAdminAsync(PaginationParams paginationParams)
         {
-            return await _requestRepository.GetPendingAsync();
+            return await _requestRepository.GetAllAsync(paginationParams);
         }
-        public async Task<List<SubscriptionPaymentRequest>> GetAllAsync()
+
+        public async Task<PagedResult<SubscriptionPaymentRequest>> GetPendingForAdminAsync(PaginationParams paginationParams)
         {
-            return await _requestRepository.GetAllAsync();
+            return await _requestRepository.GetPendingAsync(paginationParams);
         }
 
         public async Task<ServiceResult<SubscriptionPaymentRequest>> ApproveAsync(int requestId, int adminId)

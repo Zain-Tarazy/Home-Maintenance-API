@@ -131,6 +131,20 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         }
 
         [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe()
+        {
+            var userId = GetCurrentUserId();
+
+            var result = await _authService.GetCurrentUserAsync(userId);
+
+            if (!result.Succeeded)
+                return Unauthorized(result.Error);
+
+            return Ok(result.Data);
+        }
+
+        [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
@@ -145,6 +159,11 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
                 return BadRequest(result.Error);
 
             return Ok("Logged out successfully.");
+        }
+
+        private int GetCurrentUserId()
+        {
+            return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         }
 
     }

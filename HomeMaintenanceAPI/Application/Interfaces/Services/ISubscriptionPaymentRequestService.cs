@@ -12,9 +12,9 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
 
         Task<ServiceResult<List<SubscriptionPaymentRequest>>> GetMineAsync(int userId);
 
-        Task<List<SubscriptionPaymentRequest>> GetPendingAsync();
+        Task<PagedResult<SubscriptionPaymentRequest>> GetAllForAdminAsync(PaginationParams paginationParams);
 
-        Task<List<SubscriptionPaymentRequest>> GetAllAsync();
+        Task<PagedResult<SubscriptionPaymentRequest>> GetPendingForAdminAsync(PaginationParams paginationParams);
 
         Task<ServiceResult<SubscriptionPaymentRequest>> ApproveAsync(int requestId, int adminId);
 

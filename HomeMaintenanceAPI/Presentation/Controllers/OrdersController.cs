@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using FluentValidation;
+using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Application.DTOs.Orders;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
@@ -55,18 +56,22 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         }
 
         [HttpGet("my")]
-        public async Task<IActionResult> GetMine()
+        public async Task<IActionResult> GetMine([FromQuery] PaginationParams paginationParams)
         {
             var userId = GetCurrentUserId();
 
-            var result = await _orderService.GetMineAsync(userId);
+            var result = await _orderService.GetMineAsync(userId, paginationParams);
 
-            var response = _mapper.Map<List<OrderDto>>(result.Data!);
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
 
-            for (int i = 0; i < response.Count; i++)
+            var response = new PagedResult<OrderDto>
             {
-                ApplyPhoneVisibility(response[i], result.Data![i], userId);
-            }
+                Items = _mapper.Map<List<OrderDto>>(result.Data!.Items),
+                PageNumber = result.Data.PageNumber,
+                PageSize = result.Data.PageSize,
+                TotalCount = result.Data.TotalCount
+            };
 
             return Ok(response);
         }

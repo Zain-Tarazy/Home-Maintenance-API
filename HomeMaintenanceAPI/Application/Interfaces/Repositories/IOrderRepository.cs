@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Domain.Entities;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Domain.Entities;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
 {
@@ -8,11 +9,11 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
 
         Task<Order?> GetByIdWithDetailsAsync(int id);
 
-        Task<List<Order>> GetByCustomerIdAsync(int customerId);
+        Task<PagedResult<Order>> GetByCustomerIdAsync(int customerId, PaginationParams paginationParams);
 
-        Task<List<Order>> GetAvailableForProviderAsync(int specializationId, int providerUserId);
+        Task<PagedResult<Order>> GetAvailableForProviderAsync(int specializationId, int providerUserId, PaginationParams paginationParams);
 
-        Task<List<Order>> GetAssignedForProviderAsync(int providerProfileId);
+        Task<PagedResult<Order>> GetAssignedForProviderAsync(int providerProfileId, PaginationParams paginationParams);
 
         Task<bool> HasOffersAsync(int orderId);
 

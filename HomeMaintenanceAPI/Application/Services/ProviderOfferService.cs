@@ -90,16 +90,20 @@ namespace HomeMaintenanceAPI.Application.Services
             // Later: notify customer NewOfferReceived
         }
 
-        public async Task<ServiceResult<List<ProviderOffer>>> GetMineAsync(int userId)
+        public async Task<ServiceResult<PagedResult<ProviderOffer>>> GetMineAsync(
+            int providerUserId,
+            PaginationParams paginationParams)
         {
-            var providerProfile = await _providerProfileRepository.GetByUserIdAsync(userId);
+            var providerProfile = await _providerProfileRepository.GetByUserIdAsync(providerUserId);
 
             if (providerProfile == null)
-                return ServiceResult<List<ProviderOffer>>.Failure("Provider profile not found.");
+                return ServiceResult<PagedResult<ProviderOffer>>.Failure("Provider profile not found.");
 
-            var offers = await _offerRepository.GetByProviderProfileIdAsync(providerProfile.Id);
+            var offers = await _offerRepository.GetByProviderProfileIdAsync(
+                providerProfile.Id,
+                paginationParams);
 
-            return ServiceResult<List<ProviderOffer>>.Success(offers);
+            return ServiceResult<PagedResult<ProviderOffer>>.Success(offers);
         }
 
         public async Task<ServiceResult<List<ProviderOffer>>> GetByOrderIdAsync(int userId, int orderId)

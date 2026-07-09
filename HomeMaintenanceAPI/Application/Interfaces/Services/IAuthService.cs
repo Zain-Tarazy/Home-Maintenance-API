@@ -10,6 +10,7 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
         Task<ServiceResult> ResendVerificationCodeAsync(ResendVerificationCodeDto dto);
         Task<ServiceResult<AuthResult>> LoginAsync(LoginDto dto);
         Task<ServiceResult<AuthResult>> RefreshTokenAsync(RefreshTokenDto dto);
+        Task<ServiceResult<CurrentUserDto>> GetCurrentUserAsync(int userId);
         Task<ServiceResult> LogoutAsync(int userId);
     }
 }

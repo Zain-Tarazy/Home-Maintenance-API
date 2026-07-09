@@ -64,11 +64,15 @@ namespace HomeMaintenanceAPI.Application.Services
             return ServiceResult<Order>.Success(createdOrder!);
         }
 
-        public async Task<ServiceResult<List<Order>>> GetMineAsync(int customerId)
+        public async Task<ServiceResult<PagedResult<Order>>> GetMineAsync(
+            int customerId,
+            PaginationParams paginationParams)
         {
-            var orders = await _orderRepository.GetByCustomerIdAsync(customerId);
+            var orders = await _orderRepository.GetByCustomerIdAsync(
+                customerId,
+                paginationParams);
 
-            return ServiceResult<List<Order>>.Success(orders);
+            return ServiceResult<PagedResult<Order>>.Success(orders);
         }
 
         public async Task<ServiceResult<Order>> GetByIdAsync(int currentUserId, int orderId)
@@ -193,30 +197,37 @@ namespace HomeMaintenanceAPI.Application.Services
             return ServiceResult.Success();
         }
 
-        public async Task<ServiceResult<List<Order>>> GetAvailableForProviderAsync(int userId)
+        public async Task<ServiceResult<PagedResult<Order>>> GetAvailableForProviderAsync(
+            int providerUserId,
+            PaginationParams paginationParams)
         {
-            var providerProfile = await _providerProfileRepository.GetByUserIdAsync(userId);
+            var providerProfile = await _providerProfileRepository.GetByUserIdAsync(providerUserId);
 
             if (providerProfile == null)
-                return ServiceResult<List<Order>>.Failure("Provider profile not found.");
+                return ServiceResult<PagedResult<Order>>.Failure("Provider profile not found.");
 
             var orders = await _orderRepository.GetAvailableForProviderAsync(
+                providerUserId,
                 providerProfile.SpecializationId,
-                userId);
+                paginationParams);
 
-            return ServiceResult<List<Order>>.Success(orders);
+            return ServiceResult<PagedResult<Order>>.Success(orders);
         }
 
-        public async Task<ServiceResult<List<Order>>> GetAssignedForProviderAsync(int userId)
+        public async Task<ServiceResult<PagedResult<Order>>> GetAssignedForProviderAsync(
+            int providerUserId,
+            PaginationParams paginationParams)
         {
-            var providerProfile = await _providerProfileRepository.GetByUserIdAsync(userId);
+            var providerProfile = await _providerProfileRepository.GetByUserIdAsync(providerUserId);
 
             if (providerProfile == null)
-                return ServiceResult<List<Order>>.Failure("Provider profile not found.");
+                return ServiceResult<PagedResult<Order>>.Failure("Provider profile not found.");
 
-            var orders = await _orderRepository.GetAssignedForProviderAsync(providerProfile.Id);
+            var orders = await _orderRepository.GetAssignedForProviderAsync(
+                providerProfile.Id,
+                paginationParams);
 
-            return ServiceResult<List<Order>>.Success(orders);
+            return ServiceResult<PagedResult<Order>>.Success(orders);
         }
 
         private ServiceResult ValidateOrderInput(string description, decimal latitude, decimal longitude)

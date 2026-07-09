@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Domain.Entities;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Domain.Entities;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
 {
@@ -8,7 +9,7 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
 
         Task<List<ProviderOffer>> GetByOrderIdAsync(int orderId);
 
-        Task<List<ProviderOffer>> GetByProviderProfileIdAsync(int providerProfileId);
+        Task<PagedResult<ProviderOffer>> GetByProviderProfileIdAsync(int providerProfileId,PaginationParams paginationParams);
 
         Task<bool> ExistsForOrderAndProviderAsync(int orderId, int providerProfileId);
 

@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Application.Interfaces.Repositories;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Application.Interfaces.Repositories;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
 using HomeMaintenanceAPI.Infrastructure.Data;
@@ -30,13 +31,41 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<ProviderOffer>> GetByProviderProfileIdAsync(int providerProfileId)
+        public async Task<PagedResult<ProviderOffer>> GetByProviderProfileIdAsync(
+            int providerProfileId,
+            PaginationParams paginationParams)
         {
-            return await IncludeDetails()
+            var query = _context.ProviderOffers
                 .AsNoTracking()
+                .Include(o => o.Order)
+                    .ThenInclude(order => order.Customer)
+                .Include(o => o.Order)
+                    .ThenInclude(order => order.Specialization)
+                .Include(o => o.ProviderProfile)
+                    .ThenInclude(p => p.User)
+                .Include(o => o.ProviderProfile)
+                    .ThenInclude(p => p.Specialization)
+                .Include(o => o.ProviderProfile)
+                    .ThenInclude(p => p.Ratings)
+                .Include(o => o.ProviderProfile)
+                    .ThenInclude(p => p.SelectedOrders)
                 .Where(o => o.ProviderProfileId == providerProfileId)
                 .OrderByDescending(o => o.CreatedAt)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<ProviderOffer>(
+                items,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount
+            );
         }
 
         public async Task<bool> ExistsForOrderAndProviderAsync(int orderId, int providerProfileId)

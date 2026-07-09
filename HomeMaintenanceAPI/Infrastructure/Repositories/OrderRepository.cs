@@ -1,4 +1,5 @@
-﻿using HomeMaintenanceAPI.Application.Interfaces.Repositories;
+﻿using HomeMaintenanceAPI.Application.Common;
+using HomeMaintenanceAPI.Application.Interfaces.Repositories;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
 using HomeMaintenanceAPI.Infrastructure.Data;
@@ -35,46 +36,99 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
-        public async Task<List<Order>> GetByCustomerIdAsync(int customerId)
+        public async Task<PagedResult<Order>> GetByCustomerIdAsync(
+            int customerId,
+            PaginationParams paginationParams)
         {
-            return await _context.Orders
+            var query = _context.Orders
                 .AsNoTracking()
                 .Include(o => o.Customer)
                 .Include(o => o.Specialization)
                 .Include(o => o.SelectedProviderProfile)
                     .ThenInclude(p => p!.User)
+                .Include(o => o.Rating)
                 .Where(o => o.CustomerId == customerId)
                 .OrderByDescending(o => o.CreatedAt)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<Order>(
+                items,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount
+            );
         }
 
-        public async Task<List<Order>> GetAvailableForProviderAsync(int specializationId, int providerUserId)
+        public async Task<PagedResult<Order>> GetAvailableForProviderAsync(
+            int providerUserId,
+            int specializationId,
+            PaginationParams paginationParams)
         {
-            return await _context.Orders
+            var query = _context.Orders
                 .AsNoTracking()
                 .Include(o => o.Customer)
                 .Include(o => o.Specialization)
+                .Include(o => o.SelectedProviderProfile)
+                    .ThenInclude(p => p!.User)
                 .Where(o =>
                     o.Status == OrderStatus.WaitingForOffers &&
                     o.SpecializationId == specializationId &&
                     o.CustomerId != providerUserId)
                 .OrderByDescending(o => o.CreatedAt)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<Order>(
+                items,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount
+            );
         }
 
-        public async Task<List<Order>> GetAssignedForProviderAsync(int providerProfileId)
+        public async Task<PagedResult<Order>> GetAssignedForProviderAsync(
+            int providerProfileId,
+            PaginationParams paginationParams)
         {
-            return await _context.Orders
+            var query = _context.Orders
                 .AsNoTracking()
                 .Include(o => o.Customer)
                 .Include(o => o.Specialization)
                 .Include(o => o.SelectedProviderProfile)
                     .ThenInclude(p => p!.User)
+                .Include(o => o.Rating)
                 .Where(o =>
                     o.SelectedProviderProfileId == providerProfileId &&
                     o.Status != OrderStatus.Cancelled)
                 .OrderByDescending(o => o.CreatedAt)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<Order>(
+                items,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount
+            );
         }
 
         public async Task<bool> HasOffersAsync(int orderId)
