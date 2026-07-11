@@ -10,28 +10,42 @@ namespace HomeMaintenanceAPI.Application.Services
     {
         private readonly IProviderProfileRepository _providerProfileRepository;
         private readonly ISpecializationRepository _specializationRepository;
+        private readonly ILogger<ProviderProfileService> _logger;
 
         public ProviderProfileService(
             IProviderProfileRepository providerProfileRepository,
-            ISpecializationRepository specializationRepository)
+            ISpecializationRepository specializationRepository,
+            ILogger<ProviderProfileService> logger)
         {
             _providerProfileRepository = providerProfileRepository;
             _specializationRepository = specializationRepository;
+            _logger = logger;
         }
 
         public async Task<ServiceResult<ProviderProfile>> CreateAsync(int userId, CreateProviderProfileDto dto)
         {
             if (await _providerProfileRepository.ExistsForUserAsync(userId))
+            {
+                _logger.LogWarning(
+                "Provider profile creation failed. UserId={UserId}, Reason={Reason}",
+                userId,
+                "Provider profile already exists");
                 return ServiceResult<ProviderProfile>.Failure("You already have a provider profile.");
-
+            }
             var specialization = await _specializationRepository.GetByIdAsync(dto.SpecializationId);
 
             if (specialization == null)
                 return ServiceResult<ProviderProfile>.Failure("Specialization not found.");
 
             if (!specialization.IsActive)
+            {
+                _logger.LogWarning(
+                    "Provider profile creation failed. UserId={UserId}, SpecializationId={SpecializationId}, Reason={Reason}",
+                    userId,
+                    dto.SpecializationId,
+                    "Specialization inactive");
                 return ServiceResult<ProviderProfile>.Failure("Specialization is not active.");
-
+            }
             var providerProfile = new ProviderProfile
             {
                 UserId = userId,
@@ -44,6 +58,11 @@ namespace HomeMaintenanceAPI.Application.Services
 
             var createdProfile = await _providerProfileRepository.GetByUserIdAsync(userId);
 
+            _logger.LogInformation(
+                "Provider profile created. ProviderProfileId={ProviderProfileId}, UserId={UserId}, SpecializationId={SpecializationId}",
+                providerProfile.Id,
+                providerProfile.UserId,
+                providerProfile.SpecializationId);
             return ServiceResult<ProviderProfile>.Success(createdProfile!);
         }
 

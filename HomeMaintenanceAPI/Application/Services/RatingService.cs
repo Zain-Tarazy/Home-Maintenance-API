@@ -13,17 +13,20 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly IOrderRepository _orderRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
         private readonly INotificationService _notificationService;
+        private readonly ILogger<RatingService> _logger;
 
         public RatingService(
             IRatingRepository ratingRepository,
             IOrderRepository orderRepository,
             IProviderProfileRepository providerProfileRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            ILogger<RatingService> logger)
         {
             _ratingRepository = ratingRepository;
             _orderRepository = orderRepository;
             _providerProfileRepository = providerProfileRepository;
             _notificationService = notificationService;
+            _logger = logger;
         }
 
         public async Task<ServiceResult<Rating>> CreateAsync(int userId, CreateRatingDto dto)
@@ -46,8 +49,14 @@ namespace HomeMaintenanceAPI.Application.Services
                 return ServiceResult<Rating>.Failure("No provider was selected for this order.");
 
             if (await _ratingRepository.ExistsForOrderAsync(order.Id))
+            {
+                _logger.LogWarning(
+                    "Rating creation blocked. OrderId={OrderId}, CustomerId={CustomerId}, Reason={Reason}",
+                    dto.OrderId,
+                    order.CustomerId,
+                    "Order already rated");
                 return ServiceResult<Rating>.Failure("This order has already been rated.");
-
+            }
             var rating = new Rating
             {
                 OrderId = order.Id,
@@ -68,6 +77,14 @@ namespace HomeMaintenanceAPI.Application.Services
                  "A customer rated you after a completed order.",
                  NotificationType.RatingReceived,
                  relatedOrderId: order.Id);
+
+            _logger.LogInformation(
+                "Rating created. RatingId={RatingId}, OrderId={OrderId}, CustomerId={CustomerId}, ProviderProfileId={ProviderProfileId}, Value={Value}",
+                rating.Id,
+                rating.OrderId,
+                rating.CustomerId,
+                rating.ProviderProfileId,
+                rating.Value);
 
             return ServiceResult<Rating>.Success(createdRating!);
         }

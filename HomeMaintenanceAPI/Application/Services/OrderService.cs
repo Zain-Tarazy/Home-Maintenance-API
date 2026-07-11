@@ -14,17 +14,20 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly ISpecializationRepository _specializationRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
         private readonly INotificationService _notificationService;
+        private readonly ILogger<OrderService> _logger;
 
         public OrderService(
             IOrderRepository orderRepository,
             ISpecializationRepository specializationRepository,
             IProviderProfileRepository providerProfileRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            ILogger<OrderService> logger)
         {
             _orderRepository = orderRepository;
             _specializationRepository = specializationRepository;
             _providerProfileRepository = providerProfileRepository;
             _notificationService = notificationService;
+            _logger = logger;
         }
 
         public async Task<ServiceResult<Order>> CreateAsync(int customerId, CreateOrderDto dto)
@@ -40,8 +43,14 @@ namespace HomeMaintenanceAPI.Application.Services
                 return ServiceResult<Order>.Failure("Specialization not found.");
 
             if (!specialization.IsActive)
+            {
+                _logger.LogWarning(
+                    "Order creation failed. CustomerId={CustomerId}, SpecializationId={SpecializationId}, Reason={Reason}",
+                    customerId,
+                    dto.SpecializationId,
+                    "Specialization inactive");
                 return ServiceResult<Order>.Failure("Specialization is not active.");
-
+            }
             var order = new Order
             {
                 CustomerId = customerId,
@@ -60,6 +69,13 @@ namespace HomeMaintenanceAPI.Application.Services
             await _orderRepository.SaveChangesAsync();
 
             var createdOrder = await _orderRepository.GetByIdWithDetailsAsync(order.Id);
+
+
+            _logger.LogInformation(
+                "Order created. OrderId={OrderId}, CustomerId={CustomerId}, SpecializationId={SpecializationId}",
+                order.Id,
+                order.CustomerId,
+                order.SpecializationId);
 
             return ServiceResult<Order>.Success(createdOrder!);
         }
@@ -119,6 +135,11 @@ namespace HomeMaintenanceAPI.Application.Services
 
             if (hasOffers)
             {
+                _logger.LogWarning(
+                    "Order update blocked. OrderId={OrderId}, CustomerId={CustomerId}, Reason={Reason}",
+                    orderId,
+                    customerId,
+                    "Order already has offers");
                 return ServiceResult<Order>.Failure(
                     "Cannot update order after offers have been submitted. Cancel it and create a new order.");
             }
@@ -149,6 +170,12 @@ namespace HomeMaintenanceAPI.Application.Services
             await _orderRepository.SaveChangesAsync();
 
             var updatedOrder = await _orderRepository.GetByIdWithDetailsAsync(order.Id);
+
+
+            _logger.LogInformation(
+                "Order updated. OrderId={OrderId}, CustomerId={CustomerId}",
+                order.Id,
+                customerId);
 
             return ServiceResult<Order>.Success(updatedOrder!);
         }
@@ -193,6 +220,12 @@ namespace HomeMaintenanceAPI.Application.Services
                     NotificationType.OrderCancelled,
                     relatedOrderId: order.Id);
             }
+
+
+            _logger.LogInformation(
+                "Order cancelled. OrderId={OrderId}, CustomerId={CustomerId}",
+                order.Id,
+                customerId);
 
             return ServiceResult.Success();
         }

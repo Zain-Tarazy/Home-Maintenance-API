@@ -15,15 +15,18 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
         private readonly ITokenService _tokenService;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IUserRepository userRepository,
             IEmailService emailService,
-            ITokenService tokenService)
+            ITokenService tokenService,
+            ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
             _emailService = emailService;
             _tokenService = tokenService;
+            _logger = logger;
         }
 
         public async Task<ServiceResult> RegisterAsync(RegisterDto dto)
@@ -32,10 +35,16 @@ namespace HomeMaintenanceAPI.Application.Services
             var phoneNumber = dto.PhoneNumber.Trim();
 
             if (await _userRepository.EmailExistsAsync(email))
+            {
+                _logger.LogWarning("Registration failed. Email={Email} is already registered.", email);
                 return ServiceResult.Failure("Email is already registered.");
+            }
 
             if (await _userRepository.PhoneNumberExistsAsync(phoneNumber))
+            {
+                _logger.LogWarning("Registration failed. PhoneNumber={PhoneNumber} is already registered.", phoneNumber);
                 return ServiceResult.Failure("Phone number is already registered.");
+            }
 
             var salt = GenerateSalt();
             var passwordHash = ComputeHash(dto.Password, salt);
@@ -64,6 +73,12 @@ namespace HomeMaintenanceAPI.Application.Services
                 "Email verification code",
                 $"Your verification code is: {otp}");
 
+
+            _logger.LogInformation(
+                "User registered successfully. UserId={UserId}, Email={Email}",
+                user.Id,
+                user.Email);
+
             return ServiceResult.Success();
         }
 
@@ -74,31 +89,48 @@ namespace HomeMaintenanceAPI.Application.Services
             var user = await _userRepository.GetByEmailAsync(email);
 
             if (user == null)
+            {
+                _logger.LogWarning("Email verification failed. Email={Email}, Reason={Reason}", email, "User not found");
                 return ServiceResult.Failure("Invalid email or verification code.");
+            }
 
             if (user.IsEmailVerified)
+            {
+                _logger.LogInformation("Email is already verified. UserId={UserId}, Email={Email}", user.Id, user.Email);
                 return ServiceResult.Success();
+            }
 
             if (user.EmailVerificationCodeHash == null ||
                 user.EmailVerificationCodeExpiresAt == null)
             {
+                _logger.LogWarning("Email verification failed. UserId={UserId}, Email={Email}, Reason={Reason}", user.Id, user.Email, "No verification code found");
                 return ServiceResult.Failure("No verification code found. Please request a new code.");
             }
 
             if (user.EmailVerificationCodeExpiresAt < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Email verification failed. UserId={UserId}, Email={Email}, Reason={Reason}", user.Id, user.Email, "Verification code has expired");
                 return ServiceResult.Failure("Verification code has expired.");
+            }
 
             var receivedCodeHash = ComputeHash(dto.Code, user.PasswordSalt);
 
             if (receivedCodeHash != user.EmailVerificationCodeHash)
+            {
+                _logger.LogWarning("Email verification failed. UserId={UserId}, Email={Email}, Reason={Reason}", user.Id, user.Email, "Invalid verification code");
                 return ServiceResult.Failure("Invalid email or verification code.");
-
+            }
             user.IsEmailVerified = true;
             user.EmailVerificationCodeHash = null;
             user.EmailVerificationCodeExpiresAt = null;
 
             await _userRepository.UpdateAsync(user);
             await _userRepository.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Email verified successfully. UserId={UserId}, Email={Email}",
+                user.Id,
+                user.Email);
 
             return ServiceResult.Success();
         }
@@ -140,16 +172,33 @@ namespace HomeMaintenanceAPI.Application.Services
             var user = await _userRepository.GetByEmailAsync(email);
 
             if (user == null)
+            {
+                _logger.LogWarning(
+                    "Login failed. Email={Email}, Reason={Reason}",
+                    dto.Email,
+                    "User not found");
                 return ServiceResult<AuthResult>.Failure("Invalid email or password.");
-
+            }
             if (!user.IsEmailVerified)
+            {
+                _logger.LogWarning(
+                    "Login failed. UserId={UserId}, Email={Email}, Reason={Reason}",
+                    user.Id,
+                    user.Email,
+                    "Email not verified");
                 return ServiceResult<AuthResult>.Failure("Please verify your email first.");
-
+            }
             var passwordHash = ComputeHash(dto.Password, user.PasswordSalt);
 
             if (passwordHash != user.PasswordHash)
+            {
+                _logger.LogWarning(
+                    "Login failed. UserId={UserId}, Email={Email}, Reason={Reason}",
+                    user.Id,
+                    user.Email,
+                    "Invalid password");
                 return ServiceResult<AuthResult>.Failure("Invalid email or password.");
-
+            }
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = GenerateRefreshToken();
 
@@ -165,6 +214,10 @@ namespace HomeMaintenanceAPI.Application.Services
                 RefreshToken = refreshToken
             };
 
+            _logger.LogInformation(
+                "User logged in successfully. UserId={UserId}, Email={Email}",
+                user.Id,
+                user.Email);
             return ServiceResult<AuthResult>.Success(authResult);
         }
 
@@ -276,6 +329,11 @@ namespace HomeMaintenanceAPI.Application.Services
                 "Password Reset Code",
                 $"Your password reset code is: {resetCode}. It expires in 10 minutes.");
 
+            _logger.LogInformation(
+                "Password reset code sent. UserId={UserId}, Email={Email}",
+                user.Id,
+                user.Email);
+
             return ServiceResult.Success();
         }
 
@@ -320,6 +378,11 @@ namespace HomeMaintenanceAPI.Application.Services
 
             await _userRepository.UpdateAsync(user);
             await _userRepository.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Password reset successfully. UserId={UserId}, Email={Email}",
+                user.Id,
+                user.Email);
 
             return ServiceResult.Success();
         }

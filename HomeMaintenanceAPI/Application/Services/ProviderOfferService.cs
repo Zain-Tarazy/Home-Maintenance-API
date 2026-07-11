@@ -15,6 +15,7 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly IProviderProfileRepository _providerProfileRepository;
         private readonly INotificationService _notificationService;
         private readonly ISpecializationRepository _specializationRepository;
+        private readonly ILogger<ProviderOfferService> _logger;
 
 
         public ProviderOfferService(
@@ -22,13 +23,15 @@ namespace HomeMaintenanceAPI.Application.Services
             IOrderRepository orderRepository,
             IProviderProfileRepository providerProfileRepository,
             INotificationService notificationService,
-            ISpecializationRepository specializationRepository)
+            ISpecializationRepository specializationRepository,
+            ILogger<ProviderOfferService> logger)
         {
             _offerRepository = offerRepository;
             _orderRepository = orderRepository;
             _providerProfileRepository = providerProfileRepository;
             _notificationService = notificationService;
             _specializationRepository = specializationRepository;
+            _logger = logger;
         }
 
         public async Task<ServiceResult<ProviderOffer>> CreateAsync(int userId, CreateOfferDto dto)
@@ -36,17 +39,29 @@ namespace HomeMaintenanceAPI.Application.Services
             var providerProfile = await _providerProfileRepository.GetByUserIdAsync(userId);
 
             if (providerProfile == null)
+            {
+                _logger.LogWarning(
+                    "Offer creation failed. UserId={UserId}, OrderId={OrderId}, Reason={Reason}",
+                    userId,
+                    dto.OrderId,
+                    "Provider profile not found");
                 return ServiceResult<ProviderOffer>.Failure("Provider profile not found.");
-
-            var providerSpecialization = await _specializationRepository.GetByIdAsync(providerProfile.SpecializationId);    
+            }
+            var providerSpecialization = await _specializationRepository.GetByIdAsync(providerProfile.SpecializationId);
 
             if (providerSpecialization == null)
                 return ServiceResult<ProviderOffer>.Failure("Provider specialization not found.");
 
             if (!providerSpecialization.IsActive)
+            {
+                _logger.LogWarning(
+                    "Offer creation blocked. ProviderProfileId={ProviderProfileId}, OrderId={OrderId}, Reason={Reason}",
+                    providerProfile.Id,
+                    dto.OrderId,
+                    "Provider specialization inactive");
                 return ServiceResult<ProviderOffer>.Failure(
-                    "Your specialization is currently inactive. You cannot submit offers until it is reactivated by the admin.");
-
+                        "Your specialization is currently inactive. You cannot submit offers until it is reactivated by the admin.");
+            }
             if (providerProfile == null)
                 return ServiceResult<ProviderOffer>.Failure("Provider profile not found.");
 
@@ -68,11 +83,23 @@ namespace HomeMaintenanceAPI.Application.Services
                 await _providerProfileRepository.HasActiveSubscriptionAsync(providerProfile.Id);
 
             if (!hasActiveSubscription)
+            {
+                _logger.LogWarning(
+                    "Offer creation blocked. ProviderProfileId={ProviderProfileId}, OrderId={OrderId}, Reason={Reason}",
+                    providerProfile.Id,
+                    dto.OrderId,
+                    "No active subscription");
                 return ServiceResult<ProviderOffer>.Failure("You need an active subscription to submit offers.");
-
+            }
             if (await _offerRepository.ExistsForOrderAndProviderAsync(order.Id, providerProfile.Id))
+            {
+                _logger.LogWarning(
+                    "Offer creation blocked. ProviderProfileId={ProviderProfileId}, OrderId={OrderId}, Reason={Reason}",
+                    providerProfile.Id,
+                    dto.OrderId,
+                    "Duplicate offer");
                 return ServiceResult<ProviderOffer>.Failure("You already submitted an offer to this order.");
-
+            }
             var validation = ValidateOfferInput(dto.InspectionPrice, dto.ProviderLatitude, dto.ProviderLongitude);
 
             if (!validation.Succeeded)
@@ -102,9 +129,15 @@ namespace HomeMaintenanceAPI.Application.Services
                 relatedOrderId: order.Id,
                 relatedOfferId: createdOffer!.Id);
 
+            _logger.LogInformation(
+                "Offer created. OfferId={OfferId}, OrderId={OrderId}, ProviderProfileId={ProviderProfileId}",
+                offer.Id,
+                offer.OrderId,
+                offer.ProviderProfileId);
+
             return ServiceResult<ProviderOffer>.Success(createdOffer!);
 
-            // Later: notify customer NewOfferReceived
+            //   Later: notify customer NewOfferReceived
         }
 
         public async Task<ServiceResult<PagedResult<ProviderOffer>>> GetMineAsync(
@@ -203,6 +236,12 @@ namespace HomeMaintenanceAPI.Application.Services
                 relatedOrderId: offer.OrderId,
                 relatedOfferId: offer.Id);
 
+            _logger.LogInformation(
+                "Offer cancelled by provider. OfferId={OfferId}, OrderId={OrderId}, ProviderProfileId={ProviderProfileId}",
+                offer.Id,
+                offer.OrderId,
+                offer.ProviderProfileId);
+
             return ServiceResult.Success();
         }
 
@@ -280,6 +319,13 @@ namespace HomeMaintenanceAPI.Application.Services
 
             var updatedOffer = await _offerRepository.GetByIdWithDetailsAsync(offer.Id);
 
+            _logger.LogInformation(
+                "Offer accepted for inspection. OfferId={OfferId}, OrderId={OrderId}, CustomerId={CustomerId}, ProviderProfileId={ProviderProfileId}",
+                offer.Id,
+                offer.OrderId,
+                order.CustomerId,
+                offer.ProviderProfileId);
+
             return ServiceResult<ProviderOffer>.Success(updatedOffer!);
 
             // Later: notify provider OfferAcceptedForInspection
@@ -325,6 +371,13 @@ namespace HomeMaintenanceAPI.Application.Services
                 relatedOfferId: offer.Id);
 
             var updatedOffer = await _offerRepository.GetByIdWithDetailsAsync(offer.Id);
+
+            _logger.LogInformation(
+                "Offer rejected after inspection. OfferId={OfferId}, OrderId={OrderId}, CustomerId={CustomerId}, ProviderProfileId={ProviderProfileId}",
+                offer.Id,
+                offer.OrderId,
+                order.CustomerId,
+                offer.ProviderProfileId);
 
             return ServiceResult<ProviderOffer>.Success(updatedOffer!);
 
@@ -383,6 +436,13 @@ namespace HomeMaintenanceAPI.Application.Services
             }
 
             var updatedOffer = await _offerRepository.GetByIdWithDetailsAsync(offer.Id);
+
+            _logger.LogInformation(
+                "Customer continued work with provider. OfferId={OfferId}, OrderId={OrderId}, CustomerId={CustomerId}, ProviderProfileId={ProviderProfileId}",
+                offer.Id,
+                offer.OrderId,
+                order.CustomerId,
+                offer.ProviderProfileId);
 
             return ServiceResult<ProviderOffer>.Success(updatedOffer!);
 

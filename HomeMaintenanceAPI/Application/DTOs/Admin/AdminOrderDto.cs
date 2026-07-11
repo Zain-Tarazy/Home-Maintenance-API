@@ -31,5 +31,10 @@ namespace HomeMaintenanceAPI.Application.DTOs.Admin
         public int? RatingValue { get; set; }
 
         public DateTime? RatingCreatedAt { get; set; }
+        public decimal Latitude { get; set; }
+
+        public decimal Longitude { get; set; }
+
+        public string? AddressText { get; set; }
     }
 }

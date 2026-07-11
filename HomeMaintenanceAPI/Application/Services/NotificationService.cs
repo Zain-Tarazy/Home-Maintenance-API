@@ -13,16 +13,19 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly INotificationRepository _notificationRepository;
         private readonly INotificationSender _notificationSender;
         private readonly IMapper _mapper;
+        private readonly ILogger<NotificationService> _logger;
 
         public NotificationService(
 
             INotificationRepository notificationRepository,
             INotificationSender notificationSender,
-            IMapper mapper)
+            IMapper mapper,
+            ILogger<NotificationService> logger)
         {
             _notificationRepository = notificationRepository;
             _notificationSender = notificationSender;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<PagedResult<Notification>> GetMineAsync(
@@ -98,9 +101,22 @@ namespace HomeMaintenanceAPI.Application.Services
             await _notificationRepository.AddAsync(notification);
             await _notificationRepository.SaveChangesAsync();
 
+            _logger.LogInformation(
+                "Notification created. NotificationId={NotificationId}, UserId={UserId}, Type={Type}, RelatedOrderId={RelatedOrderId}, RelatedOfferId={RelatedOfferId}, RelatedSubscriptionPaymentRequestId={RelatedSubscriptionPaymentRequestId}",
+                notification.Id,
+                userId,
+                type,
+                relatedOrderId,
+                relatedOfferId,
+                relatedSubscriptionPaymentRequestId);
+
             var dto = _mapper.Map<NotificationDto>(notification);
 
             await _notificationSender.SendToUserAsync(userId, dto);
+            _logger.LogInformation(
+                "Notification sent through SignalR. NotificationId={NotificationId}, UserId={UserId}",
+                notification.Id,
+                userId);
         }
     }
 }

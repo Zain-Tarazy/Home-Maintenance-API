@@ -13,15 +13,18 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly IOrderRepository _orderRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
         private readonly INotificationService _notificationService;
+        private readonly ILogger<OrderCompletionService> _logger;
 
         public OrderCompletionService(
             IOrderRepository orderRepository,
             IProviderProfileRepository providerProfileRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            ILogger<OrderCompletionService> logger)
         {
             _orderRepository = orderRepository;
             _providerProfileRepository = providerProfileRepository;
             _notificationService = notificationService;
+            _logger = logger;
         }
 
         public async Task<ServiceResult<GenerateCompletionQrResponseDto>> GenerateCompletionQrAsync(
@@ -64,6 +67,13 @@ namespace HomeMaintenanceAPI.Application.Services
                 "The customer generated a completion QR for the order.",
                 NotificationType.OrderCompletionPending,
                 relatedOrderId: order.Id);
+            
+            _logger.LogInformation(
+                "Completion QR generated. OrderId={OrderId}, CustomerId={CustomerId}, SelectedProviderProfileId={ProviderProfileId}, ExpiresAt={ExpiresAt}",
+                order.Id,
+                order.CustomerId,
+                order.SelectedProviderProfileId,
+                order.CompletionTokenExpiresAt);
 
             return ServiceResult<GenerateCompletionQrResponseDto>.Success(
                 new GenerateCompletionQrResponseDto
@@ -92,8 +102,15 @@ namespace HomeMaintenanceAPI.Application.Services
                 return ServiceResult.Failure("Order is not waiting for QR completion.");
 
             if (order.SelectedProviderProfileId != providerProfile.Id)
+            {
+                _logger.LogWarning(
+                    "QR completion blocked. OrderId={OrderId}, UserId={UserId}, ProviderProfileId={ProviderProfileId}, Reason={Reason}",
+                    dto.OrderId,
+                    order.SelectedProviderProfileId,
+                    providerProfile?.Id,
+                    "Provider is not selected for this order");
                 return ServiceResult.Failure("You are not the selected provider for this order.");
-
+            }
             if (string.IsNullOrWhiteSpace(order.CompletionTokenHash) ||
                 order.CompletionTokenExpiresAt == null)
             {
@@ -123,6 +140,11 @@ namespace HomeMaintenanceAPI.Application.Services
                 "Your order has been completed successfully.",
                 NotificationType.OrderCompleted,
                 relatedOrderId: order.Id);
+
+            _logger.LogInformation(
+                "Order completed by QR. OrderId={OrderId}, ProviderProfileId={ProviderProfileId}",
+                order.Id,
+                providerProfile.Id);
 
             return ServiceResult.Success();
 

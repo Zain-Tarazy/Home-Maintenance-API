@@ -13,17 +13,20 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly ISubscriptionPaymentRequestRepository _requestRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
         private readonly ISubscriptionPlanRepository _subscriptionPlanRepository;
+        private readonly ILogger<SubscriptionPaymentRequestService> _logger;
 
         public SubscriptionPaymentRequestService(
             ISubscriptionPaymentRequestRepository requestRepository,
             IProviderProfileRepository providerProfileRepository,
             ISubscriptionPlanRepository subscriptionPlanRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            ILogger<SubscriptionPaymentRequestService> logger)
         {
             _requestRepository = requestRepository;
             _providerProfileRepository = providerProfileRepository;
             _subscriptionPlanRepository = subscriptionPlanRepository;
             _notificationService = notificationService;
+            _logger = logger;
         }
         public async Task<ServiceResult<SubscriptionPaymentRequest>> CreateAsync(
             int userId,
@@ -38,14 +41,24 @@ namespace HomeMaintenanceAPI.Application.Services
                 await _providerProfileRepository.HasActiveSubscriptionAsync(providerProfile.Id);
 
             if (hasActiveSubscription)
+            {
+                _logger.LogWarning(
+                    "Subscription payment request blocked. ProviderProfileId={ProviderProfileId}, Reason={Reason}",
+                    providerProfile.Id,
+                    "Provider already has active subscription");
                 return ServiceResult<SubscriptionPaymentRequest>.Failure("You already have an active subscription.");
-
+            }
             var hasPendingRequest =
                 await _requestRepository.HasPendingRequestAsync(providerProfile.Id);
 
             if (hasPendingRequest)
+            {
+                _logger.LogWarning(
+                    "Subscription payment request blocked. ProviderProfileId={ProviderProfileId}, Reason={Reason}",
+                    providerProfile.Id,
+                    "Provider already has pending request");
                 return ServiceResult<SubscriptionPaymentRequest>.Failure("You already have a pending subscription request.");
-
+            }
             var plan = await _subscriptionPlanRepository.GetByIdAsync(dto.SubscriptionPlanId);
 
             if (plan == null)
@@ -60,8 +73,14 @@ namespace HomeMaintenanceAPI.Application.Services
                 return ServiceResult<SubscriptionPaymentRequest>.Failure("Transaction id is required.");
 
             if (await _requestRepository.TransactionIdExistsAsync(transactionId))
+            {
+                _logger.LogWarning(
+                    "Subscription payment request blocked. ProviderProfileId={ProviderProfileId}, TransactionId={TransactionId}, Reason={Reason}",
+                    providerProfile.Id,
+                    dto.TransactionId,
+                    "Duplicate transaction ID");
                 return ServiceResult<SubscriptionPaymentRequest>.Failure("Transaction id already exists.");
-
+            }
             var request = new SubscriptionPaymentRequest
             {
                 ProviderProfileId = providerProfile.Id,
@@ -79,6 +98,13 @@ namespace HomeMaintenanceAPI.Application.Services
             await _requestRepository.SaveChangesAsync();
 
             var createdRequest = await _requestRepository.GetByIdAsync(request.Id);
+
+            _logger.LogInformation(
+                "Subscription payment request created. RequestId={RequestId}, ProviderProfileId={ProviderProfileId}, PlanId={PlanId}, Amount={Amount}",
+                request.Id,
+                request.ProviderProfileId,
+                request.SubscriptionPlanId,
+                request.Amount);
 
             return ServiceResult<SubscriptionPaymentRequest>.Success(createdRequest!);
         }
@@ -149,6 +175,13 @@ namespace HomeMaintenanceAPI.Application.Services
                 relatedSubscriptionPaymentRequestId: request.Id);
             // Later: create notification SubscriptionApproved
 
+            _logger.LogInformation(
+                "Subscription payment request approved. RequestId={RequestId}, ProviderProfileId={ProviderProfileId}, PlanId={PlanId}, AdminId={AdminId}",
+                request.Id,
+                request.ProviderProfileId,
+                request.SubscriptionPlanId,
+                adminId);
+
             var updatedRequest = await _requestRepository.GetByIdAsync(request.Id);
 
             return ServiceResult<SubscriptionPaymentRequest>.Success(updatedRequest!);
@@ -186,6 +219,12 @@ namespace HomeMaintenanceAPI.Application.Services
             // Later: create notification SubscriptionRejected
 
             var updatedRequest = await _requestRepository.GetByIdAsync(request.Id);
+
+            _logger.LogInformation(
+                "Subscription payment request rejected. RequestId={RequestId}, ProviderProfileId={ProviderProfileId}, AdminId={AdminId}",
+                request.Id,
+                request.ProviderProfileId,
+                adminId);
 
             return ServiceResult<SubscriptionPaymentRequest>.Success(updatedRequest!);
         }
