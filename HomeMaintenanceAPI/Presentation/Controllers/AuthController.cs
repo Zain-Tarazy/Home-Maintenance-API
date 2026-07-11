@@ -19,6 +19,8 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         private readonly IValidator<VerifyEmailDto> _verifyEmailValidator;
         private readonly IValidator<ResendVerificationCodeDto> _resendValidator;
         private readonly IValidator<RefreshTokenDto> _refreshValidator;
+        private readonly IValidator<ForgotPasswordDto> _forgotPasswordValidator;
+        private readonly IValidator<ResetPasswordDto> _resetPasswordValidator;
 
         public AuthController(
             IAuthService authService,
@@ -26,7 +28,9 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
             IValidator<LoginDto> loginValidator,
             IValidator<VerifyEmailDto> verifyEmailValidator,
             IValidator<ResendVerificationCodeDto> resendValidator,
-            IValidator<RefreshTokenDto> refreshValidator)
+            IValidator<RefreshTokenDto> refreshValidator,
+            IValidator<ForgotPasswordDto> forgotPasswordValidator,
+            IValidator<ResetPasswordDto> resetPasswordValidator)
         {
             _authService = authService;
             _registerValidator = registerValidator;
@@ -34,6 +38,8 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
             _verifyEmailValidator = verifyEmailValidator;
             _resendValidator = resendValidator;
             _refreshValidator = refreshValidator;
+            _forgotPasswordValidator = forgotPasswordValidator;
+            _resetPasswordValidator = resetPasswordValidator;
         }
 
         [HttpPost("register")]
@@ -160,6 +166,41 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
 
             return Ok("Logged out successfully.");
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+        {
+            var validationResult = await _forgotPasswordValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+            var result = await _authService.ForgotPasswordAsync(dto);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
+
+            return Ok("If the email exists, a password reset code has been sent.");
+        }
+
+
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        {
+            var validationResult = await _resetPasswordValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+            var result = await _authService.ResetPasswordAsync(dto);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
+
+            return Ok("Password has been reset successfully.");
+        }
+
 
         private int GetCurrentUserId()
         {

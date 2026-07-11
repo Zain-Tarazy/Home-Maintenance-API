@@ -252,6 +252,77 @@ namespace HomeMaintenanceAPI.Application.Services
             return ServiceResult<CurrentUserDto>.Success(dto);
         }
 
+        public async Task<ServiceResult> ForgotPasswordAsync(ForgotPasswordDto dto)
+        {
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
+
+            // Security rule:
+            // Do not reveal whether this email exists or not.
+            if (user == null)
+            {
+                return ServiceResult.Success();
+            }
+
+            var resetCode = GenerateOtp();
+
+            user.PasswordResetCodeHash = ComputeHash(resetCode, user.PasswordSalt);
+            user.PasswordResetCodeExpiresAt = DateTime.UtcNow.AddMinutes(10);
+
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            await _emailService.SendEmailAsync(
+                user.Email,
+                "Password Reset Code",
+                $"Your password reset code is: {resetCode}. It expires in 10 minutes.");
+
+            return ServiceResult.Success();
+        }
+
+
+        public async Task<ServiceResult> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
+
+            if (user == null)
+                return ServiceResult.Failure("Invalid email or reset code.");
+
+            if (string.IsNullOrWhiteSpace(user.PasswordResetCodeHash) ||
+                user.PasswordResetCodeExpiresAt == null)
+            {
+                return ServiceResult.Failure("Invalid email or reset code.");
+            }
+
+            if (user.PasswordResetCodeExpiresAt < DateTime.UtcNow)
+            {
+                return ServiceResult.Failure("Reset code has expired.");
+            }
+
+            var submittedCodeHash = ComputeHash(dto.Code, user.PasswordSalt);
+
+            if (submittedCodeHash != user.PasswordResetCodeHash)
+            {
+                return ServiceResult.Failure("Invalid email or reset code.");
+            }
+
+            var newSalt = GenerateSalt();
+            var newPasswordHash = ComputeHash(dto.NewPassword, newSalt);
+
+            user.PasswordSalt = newSalt;
+            user.PasswordHash = newPasswordHash;
+
+            user.PasswordResetCodeHash = null;
+            user.PasswordResetCodeExpiresAt = null;
+
+            // Security: invalidate refresh token after password reset.
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            return ServiceResult.Success();
+        }
 
 
 

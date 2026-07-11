@@ -29,6 +29,9 @@ namespace HomeMaintenanceAPI.Domain.Entities
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? PasswordResetCodeHash { get; set; }
+
+        public DateTime? PasswordResetCodeExpiresAt { get; set; }
 
         // Navigation properties
         public ProviderProfile? ProviderProfile { get; set; }

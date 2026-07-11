@@ -12,5 +12,8 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
         Task<ServiceResult<AuthResult>> RefreshTokenAsync(RefreshTokenDto dto);
         Task<ServiceResult<CurrentUserDto>> GetCurrentUserAsync(int userId);
         Task<ServiceResult> LogoutAsync(int userId);
+        Task<ServiceResult> ForgotPasswordAsync(ForgotPasswordDto dto);
+
+        Task<ServiceResult> ResetPasswordAsync(ResetPasswordDto dto);
     }
 }
