@@ -19,6 +19,7 @@
         public int? SpecializationId { get; set; }
 
         public string? SpecializationName { get; set; }
+        public bool? SpecializationIsActive { get; set; }
 
         public bool HasActiveSubscription { get; set; }
 

@@ -41,19 +41,7 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .OrderByDescending(r => r.CreatedAt)
                 .AsQueryable();
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
-                .Take(paginationParams.PageSize)
-                .ToListAsync();
-
-            return new PagedResult<SubscriptionPaymentRequest>(
-                items,
-                paginationParams.PageNumber,
-                paginationParams.PageSize,
-                totalCount
-            );
+            return await query.ToPagedResultAsync(paginationParams);
         }
         public async Task<PagedResult<SubscriptionPaymentRequest>> GetAllAsync(PaginationParams paginationParams)
         {
@@ -66,19 +54,7 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .OrderByDescending(r => r.CreatedAt)
                 .AsQueryable();
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
-                .Take(paginationParams.PageSize)
-                .ToListAsync();
-
-            return new PagedResult<SubscriptionPaymentRequest>(
-                items,
-                paginationParams.PageNumber,
-                paginationParams.PageSize,
-                totalCount
-            );
+            return await query.ToPagedResultAsync(paginationParams);
         }
 
         public async Task<SubscriptionPaymentRequest?> GetByIdAsync(int id)

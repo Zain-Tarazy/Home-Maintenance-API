@@ -22,6 +22,14 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
                 Email = email,
                 Role = role
             });
+
+
+        }
+
+        [HttpGet("throw")]
+        public IActionResult Throw()
+        {
+            throw new Exception("Test exception");
         }
     }
 }

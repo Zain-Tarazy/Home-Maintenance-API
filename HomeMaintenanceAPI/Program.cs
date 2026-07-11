@@ -11,6 +11,7 @@ using HomeMaintenanceAPI.Infrastructure.Data;
 using HomeMaintenanceAPI.Infrastructure.Repositories;
 using HomeMaintenanceAPI.Infrastructure.Services;
 using HomeMaintenanceAPI.Presentation.Hubs;
+using HomeMaintenanceAPI.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Authorization;
@@ -191,6 +192,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 

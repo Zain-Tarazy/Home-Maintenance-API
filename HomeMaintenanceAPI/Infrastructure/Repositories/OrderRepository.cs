@@ -51,19 +51,8 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .OrderByDescending(o => o.CreatedAt)
                 .AsQueryable();
 
-            var totalCount = await query.CountAsync();
+            return await query.ToPagedResultAsync(paginationParams);
 
-            var items = await query
-                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
-                .Take(paginationParams.PageSize)
-                .ToListAsync();
-
-            return new PagedResult<Order>(
-                items,
-                paginationParams.PageNumber,
-                paginationParams.PageSize,
-                totalCount
-            );
         }
 
         public async Task<PagedResult<Order>> GetAvailableForProviderAsync(
@@ -84,19 +73,7 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .OrderByDescending(o => o.CreatedAt)
                 .AsQueryable();
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
-                .Take(paginationParams.PageSize)
-                .ToListAsync();
-
-            return new PagedResult<Order>(
-                items,
-                paginationParams.PageNumber,
-                paginationParams.PageSize,
-                totalCount
-            );
+            return await query.ToPagedResultAsync(paginationParams);
         }
 
         public async Task<PagedResult<Order>> GetAssignedForProviderAsync(
@@ -116,19 +93,7 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .OrderByDescending(o => o.CreatedAt)
                 .AsQueryable();
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
-                .Take(paginationParams.PageSize)
-                .ToListAsync();
-
-            return new PagedResult<Order>(
-                items,
-                paginationParams.PageNumber,
-                paginationParams.PageSize,
-                totalCount
-            );
+            return await query.ToPagedResultAsync(paginationParams);
         }
 
         public async Task<bool> HasOffersAsync(int orderId)

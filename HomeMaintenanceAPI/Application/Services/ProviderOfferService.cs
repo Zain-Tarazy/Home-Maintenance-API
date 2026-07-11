@@ -4,6 +4,7 @@ using HomeMaintenanceAPI.Application.Interfaces.Repositories;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
+using HomeMaintenanceAPI.Infrastructure.Repositories;
 
 namespace HomeMaintenanceAPI.Application.Services
 {
@@ -13,22 +14,38 @@ namespace HomeMaintenanceAPI.Application.Services
         private readonly IOrderRepository _orderRepository;
         private readonly IProviderProfileRepository _providerProfileRepository;
         private readonly INotificationService _notificationService;
+        private readonly ISpecializationRepository _specializationRepository;
+
 
         public ProviderOfferService(
             IProviderOfferRepository offerRepository,
             IOrderRepository orderRepository,
             IProviderProfileRepository providerProfileRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            ISpecializationRepository specializationRepository)
         {
             _offerRepository = offerRepository;
             _orderRepository = orderRepository;
             _providerProfileRepository = providerProfileRepository;
             _notificationService = notificationService;
+            _specializationRepository = specializationRepository;
         }
 
         public async Task<ServiceResult<ProviderOffer>> CreateAsync(int userId, CreateOfferDto dto)
         {
             var providerProfile = await _providerProfileRepository.GetByUserIdAsync(userId);
+
+            if (providerProfile == null)
+                return ServiceResult<ProviderOffer>.Failure("Provider profile not found.");
+
+            var providerSpecialization = await _specializationRepository.GetByIdAsync(providerProfile.SpecializationId);    
+
+            if (providerSpecialization == null)
+                return ServiceResult<ProviderOffer>.Failure("Provider specialization not found.");
+
+            if (!providerSpecialization.IsActive)
+                return ServiceResult<ProviderOffer>.Failure(
+                    "Your specialization is currently inactive. You cannot submit offers until it is reactivated by the admin.");
 
             if (providerProfile == null)
                 return ServiceResult<ProviderOffer>.Failure("Provider profile not found.");

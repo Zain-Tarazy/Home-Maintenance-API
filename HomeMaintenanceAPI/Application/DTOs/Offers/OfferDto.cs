@@ -1,6 +1,6 @@
 ﻿using HomeMaintenanceAPI.Domain.Enums;
 
-namespace HomeMaintenanceAPI.Application.DTOs
+namespace HomeMaintenanceAPI.Application.DTOs.Offers
 {
     public class OfferDto
     {

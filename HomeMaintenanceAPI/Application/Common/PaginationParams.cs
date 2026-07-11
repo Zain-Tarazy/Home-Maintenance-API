@@ -2,29 +2,32 @@
 {
     public class PaginationParams
     {
-        private const int MaxPageSize = 50;
+        private const int MaxPageSize = 1000;
 
-        private int _pageNumber = 1;
-        private int _pageSize = 10;
+        public int? PageNumber { get; set; }
 
-        public int PageNumber
+        public int? PageSize { get; set; }
+
+        public bool IsPaginationEnabled =>
+            PageNumber.HasValue || PageSize.HasValue;
+
+        public int GetPageNumber()
         {
-            get => _pageNumber;
-            set => _pageNumber = value < 1 ? 1 : value;
+            if (!PageNumber.HasValue || PageNumber.Value < 1)
+                return 1;
+
+            return PageNumber.Value;
         }
 
-        public int PageSize
+        public int GetPageSize()
         {
-            get => _pageSize;
-            set
-            {
-                if (value < 1)
-                    _pageSize = 10;
-                else if (value > MaxPageSize)
-                    _pageSize = MaxPageSize;
-                else
-                    _pageSize = value;
-            }
+            if (!PageSize.HasValue || PageSize.Value < 1)
+                return 10;
+
+            if (PageSize.Value > MaxPageSize)
+                return MaxPageSize;
+
+            return PageSize.Value;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using HomeMaintenanceAPI.Application.DTOs;
 using HomeMaintenanceAPI.Application.DTOs.Notifications;
 using HomeMaintenanceAPI.Application.DTOs.Orders;
 using HomeMaintenanceAPI.Application.DTOs.ProviderProfiles;
@@ -11,6 +10,7 @@ using HomeMaintenanceAPI.Application.DTOs.SubscriptionPlans;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
 using HomeMaintenanceAPI.Application.DTOs.Admin;
+using HomeMaintenanceAPI.Application.DTOs.Offers;
 
 namespace HomeMaintenanceAPI.Application.Mapping
 {
@@ -24,7 +24,9 @@ namespace HomeMaintenanceAPI.Application.Mapping
             .ForMember(dest => dest.PhoneNumber,
                 opt => opt.MapFrom(src => src.User.PhoneNumber))
             .ForMember(dest => dest.SpecializationName,
-                opt => opt.MapFrom(src => src.Specialization.Name));
+                opt => opt.MapFrom(src => src.Specialization.Name))
+            .ForMember(dest => dest.SpecializationIsActive,
+                opt => opt.MapFrom(src => src.Specialization.IsActive));
 
             CreateMap<SubscriptionPlan, SubscriptionPlanDto>();
             CreateMap<Specialization, SpecializationDto>().ReverseMap();

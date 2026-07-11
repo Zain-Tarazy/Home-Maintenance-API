@@ -25,19 +25,7 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .OrderByDescending(n => n.CreatedAt)
                 .AsQueryable();
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
-                .Take(paginationParams.PageSize)
-                .ToListAsync();
-
-            return new PagedResult<Notification>(
-                items,
-                paginationParams.PageNumber,
-                paginationParams.PageSize,
-                totalCount
-            );
+            return await query.ToPagedResultAsync(paginationParams);
         }
 
         public async Task<Notification?> GetByIdAsync(int id)

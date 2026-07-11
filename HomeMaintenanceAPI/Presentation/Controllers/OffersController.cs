@@ -2,7 +2,6 @@
 using AutoMapper;
 using FluentValidation;
 using HomeMaintenanceAPI.Application.Common;
-using HomeMaintenanceAPI.Application.DTOs;
 using HomeMaintenanceAPI.Application.DTOs.Offers;
 using HomeMaintenanceAPI.Application.Helpers;
 using HomeMaintenanceAPI.Application.Interfaces.Services;

@@ -243,6 +243,7 @@ namespace HomeMaintenanceAPI.Application.Services
 
                 SpecializationId = providerProfile?.SpecializationId,
                 SpecializationName = providerProfile?.Specialization?.Name,
+                SpecializationIsActive = providerProfile?.Specialization?.IsActive,
 
                 HasActiveSubscription = activeSubscription != null,
                 ActiveSubscriptionEndsAt = activeSubscription?.EndsAt

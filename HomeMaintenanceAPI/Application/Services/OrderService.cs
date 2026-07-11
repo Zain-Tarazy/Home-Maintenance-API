@@ -198,13 +198,23 @@ namespace HomeMaintenanceAPI.Application.Services
         }
 
         public async Task<ServiceResult<PagedResult<Order>>> GetAvailableForProviderAsync(
-            int providerUserId,
-            PaginationParams paginationParams)
+             int providerUserId,
+             PaginationParams paginationParams)
         {
             var providerProfile = await _providerProfileRepository.GetByUserIdAsync(providerUserId);
 
             if (providerProfile == null)
                 return ServiceResult<PagedResult<Order>>.Failure("Provider profile not found.");
+
+            var currentSpecialization = await _specializationRepository
+                .GetByIdAsync(providerProfile.SpecializationId);
+
+            if (currentSpecialization == null)
+                return ServiceResult<PagedResult<Order>>.Failure("Specialization not found.");
+
+            if (!currentSpecialization.IsActive)
+                return ServiceResult<PagedResult<Order>>.Failure(
+                "Your specialization is currently inactive. You cannot receive new orders until it is reactivated by the admin.");
 
             var orders = await _orderRepository.GetAvailableForProviderAsync(
                 providerUserId,

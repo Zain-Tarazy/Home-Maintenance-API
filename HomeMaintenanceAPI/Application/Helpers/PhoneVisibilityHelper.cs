@@ -1,4 +1,4 @@
-﻿using HomeMaintenanceAPI.Application.DTOs;
+﻿using HomeMaintenanceAPI.Application.DTOs.Offers;
 using HomeMaintenanceAPI.Domain.Enums;
 
 namespace HomeMaintenanceAPI.Application.Helpers
