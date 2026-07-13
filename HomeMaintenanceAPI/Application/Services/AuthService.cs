@@ -6,7 +6,6 @@ using HomeMaintenanceAPI.Application.Interfaces.Repositories;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
-using HomeMaintenanceAPI.Logs;
 
 namespace HomeMaintenanceAPI.Application.Services
 

@@ -1,6 +1,5 @@
 ﻿using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Application.DTOs.Auth;
-using HomeMaintenanceAPI.Logs;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Services
 {

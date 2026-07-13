@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using HomeMaintenanceAPI.Logs;
+using HomeMaintenanceAPI.Application.DTOs.Auth;
 
 namespace HomeMaintenanceAPI.Application.Validaotrs.Auth
 {
