@@ -19,6 +19,10 @@ namespace HomeMaintenanceAPI.Application.Validaotrs.SubscriptionPaymentRequests
             RuleFor(x => x.ProofImageUrl)
                 .MaximumLength(1000)
                 .When(x => !string.IsNullOrWhiteSpace(x.ProofImageUrl));
+
+            RuleFor(x => x.ProofImageUrl)
+                .NotEmpty()
+                .MaximumLength(500);
         }
     }
 }

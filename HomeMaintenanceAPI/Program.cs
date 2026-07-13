@@ -20,7 +20,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -158,6 +157,13 @@ builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
+builder.Services.AddScoped<IFileStorageService,LocalFileStorageService>();
+
+builder.Services.AddScoped<IUserProfileImageService, UserProfileImageService>();
+
+
+
+
 
 
 builder.Services.AddSignalR();
@@ -212,6 +218,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseCors("FrontendPolicy");
 

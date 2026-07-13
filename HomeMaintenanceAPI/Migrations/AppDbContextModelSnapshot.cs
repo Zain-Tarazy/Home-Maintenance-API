@@ -72,7 +72,7 @@ namespace HomeMaintenanceAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("HomeMaintenanceAPI.Domain.Entities.Order", b =>
@@ -133,7 +133,7 @@ namespace HomeMaintenanceAPI.Migrations
 
                     b.HasIndex("SpecializationId");
 
-                    b.ToTable("Orders", t =>
+                    b.ToTable("Orders", null, t =>
                         {
                             t.HasCheckConstraint("CK_Order_Latitude", "[Latitude] BETWEEN -90 AND 90");
 
@@ -186,7 +186,7 @@ namespace HomeMaintenanceAPI.Migrations
                     b.HasIndex("OrderId", "ProviderProfileId")
                         .IsUnique();
 
-                    b.ToTable("ProviderOffers", t =>
+                    b.ToTable("ProviderOffers", null, t =>
                         {
                             t.HasCheckConstraint("CK_ProviderOffer_InspectionPrice", "[InspectionPrice] >= 0");
 
@@ -223,7 +223,7 @@ namespace HomeMaintenanceAPI.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ProviderProfiles");
+                    b.ToTable("ProviderProfiles", (string)null);
                 });
 
             modelBuilder.Entity("HomeMaintenanceAPI.Domain.Entities.ProviderSubscription", b =>
@@ -261,7 +261,7 @@ namespace HomeMaintenanceAPI.Migrations
 
                     b.HasIndex("SubscriptionPlanId");
 
-                    b.ToTable("ProviderSubscriptions");
+                    b.ToTable("ProviderSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("HomeMaintenanceAPI.Domain.Entities.Rating", b =>
@@ -296,7 +296,7 @@ namespace HomeMaintenanceAPI.Migrations
 
                     b.HasIndex("ProviderProfileId");
 
-                    b.ToTable("Ratings", t =>
+                    b.ToTable("Ratings", null, t =>
                         {
                             t.HasCheckConstraint("CK_Rating_Value", "[Value] BETWEEN 1 AND 5");
                         });
@@ -325,7 +325,7 @@ namespace HomeMaintenanceAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Specializations");
+                    b.ToTable("Specializations", (string)null);
                 });
 
             modelBuilder.Entity("HomeMaintenanceAPI.Domain.Entities.SubscriptionPaymentRequest", b =>
@@ -382,7 +382,7 @@ namespace HomeMaintenanceAPI.Migrations
                     b.HasIndex("TransactionId")
                         .IsUnique();
 
-                    b.ToTable("SubscriptionPaymentRequests", t =>
+                    b.ToTable("SubscriptionPaymentRequests", null, t =>
                         {
                             t.HasCheckConstraint("CK_SubscriptionPaymentRequest_Amount", "[Amount] >= 0");
                         });
@@ -415,7 +415,7 @@ namespace HomeMaintenanceAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SubscriptionPlans", t =>
+                    b.ToTable("SubscriptionPlans", null, t =>
                         {
                             t.HasCheckConstraint("CK_SubscriptionPlan_Duration", "[DurationInDays] > 0");
 
@@ -489,7 +489,7 @@ namespace HomeMaintenanceAPI.Migrations
                     b.HasIndex("PhoneNumber")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("HomeMaintenanceAPI.Domain.Entities.Notification", b =>

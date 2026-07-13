@@ -91,7 +91,9 @@ namespace HomeMaintenanceAPI.Application.Mapping
                     : 0))
             .ForMember(dest => dest.CompletedOrdersCount,
                 opt => opt.MapFrom(src => src.ProviderProfile.SelectedOrders
-                        .Count(o => o.Status == OrderStatus.Completed)));
+                        .Count(o => o.Status == OrderStatus.Completed)))
+            .ForMember(dest => dest.ProviderProfileImageUrl,
+                opt => opt.MapFrom(src => src.ProviderProfile.User.ProfileImageUrl));
 
             CreateMap<Rating, RatingDto>()
             .ForMember(dest => dest.CustomerName,
@@ -147,6 +149,18 @@ namespace HomeMaintenanceAPI.Application.Mapping
                     opt => opt.MapFrom(src => src.Rating != null
                         ? src.Rating.CreatedAt
                         : (DateTime?)null));
+
+            CreateMap<ProviderProfile, ProviderProfileDto>()
+                 .ForMember(dest => dest.FullName,
+                     opt => opt.MapFrom(src => src.User.FullName))
+                 .ForMember(dest => dest.PhoneNumber,
+                     opt => opt.MapFrom(src => src.User.PhoneNumber))
+                 .ForMember(dest => dest.ProfileImageUrl,
+                     opt => opt.MapFrom(src => src.User.ProfileImageUrl))
+                 .ForMember(dest => dest.SpecializationName,
+                     opt => opt.MapFrom(src => src.Specialization.Name))
+                 .ForMember(dest => dest.SpecializationIsActive,
+                     opt => opt.MapFrom(src => src.Specialization.IsActive));
         }
     }
 }

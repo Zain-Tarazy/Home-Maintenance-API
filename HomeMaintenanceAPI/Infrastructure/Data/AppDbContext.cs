@@ -34,6 +34,10 @@ namespace HomeMaintenanceAPI.Infrastructure.Data
                 .HasIndex(u => u.PhoneNumber)
                 .IsUnique();
 
+            modelBuilder.Entity<User>()
+                .Property(u => u.ProfileImageUrl)
+                .HasMaxLength(500);
+
             // ProviderProfile: one User -> zero/one ProviderProfile
             modelBuilder.Entity<ProviderProfile>()
                 .HasIndex(p => p.UserId)
@@ -195,6 +199,11 @@ namespace HomeMaintenanceAPI.Infrastructure.Data
                 {
                     t.HasCheckConstraint("CK_SubscriptionPaymentRequest_Amount", "[Amount] >= 0");
                 });
+
+            modelBuilder.Entity<SubscriptionPaymentRequest>()
+                .Property(r => r.ProofImageUrl)
+                .HasMaxLength(500);
+
 
             // ProviderSubscription
             modelBuilder.Entity<ProviderSubscription>()

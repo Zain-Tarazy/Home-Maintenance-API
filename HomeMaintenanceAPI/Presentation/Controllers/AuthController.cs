@@ -2,7 +2,6 @@
 using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.Auth;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
-using HomeMaintenanceAPI.Logs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

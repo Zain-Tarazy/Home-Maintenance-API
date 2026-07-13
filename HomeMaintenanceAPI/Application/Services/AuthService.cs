@@ -299,7 +299,9 @@ namespace HomeMaintenanceAPI.Application.Services
                 SpecializationIsActive = providerProfile?.Specialization?.IsActive,
 
                 HasActiveSubscription = activeSubscription != null,
-                ActiveSubscriptionEndsAt = activeSubscription?.EndsAt
+                ActiveSubscriptionEndsAt = activeSubscription?.EndsAt,
+
+                ProfileImageUrl = user.ProfileImageUrl
             };
 
             return ServiceResult<CurrentUserDto>.Success(dto);
