@@ -57,6 +57,8 @@ namespace HomeMaintenanceAPI.Application.Mapping
                 opt => opt.MapFrom(src => src.Customer.FullName))
             .ForMember(dest => dest.CustomerPhoneNumber,
                 opt => opt.MapFrom(src => src.Customer.PhoneNumber))
+            .ForMember(dest => dest.CustomerProfileImageUrl,
+                opt => opt.MapFrom(src => src.Customer.ProfileImageUrl))
             .ForMember(dest => dest.SpecializationName,
                 opt => opt.MapFrom(src => src.Specialization.Name))
             .ForMember(dest => dest.SelectedProviderName,
@@ -65,8 +67,12 @@ namespace HomeMaintenanceAPI.Application.Mapping
             : null))
             .ForMember(dest => dest.SelectedProviderPhoneNumber,
                 opt => opt.MapFrom(src => src.SelectedProviderProfile != null
-                        ? src.SelectedProviderProfile.User.PhoneNumber
-                        : null));
+                    ? src.SelectedProviderProfile.User.PhoneNumber
+                    : null))
+            .ForMember(dest => dest.SelectedProviderProfileImageUrl,
+                opt => opt.MapFrom(src => src.SelectedProviderProfile != null
+                    ? src.SelectedProviderProfile.User.ProfileImageUrl
+                    : null));
 
             CreateMap<ProviderOffer, OfferDto>()
             .ForMember(dest => dest.OrderDescription,

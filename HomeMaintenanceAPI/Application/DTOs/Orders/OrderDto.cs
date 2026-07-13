@@ -30,6 +30,10 @@ namespace HomeMaintenanceAPI.Application.DTOs.Orders
 
         public string? AddressText { get; set; }
 
+        public string? CustomerProfileImageUrl { get; set; }
+
+        public string? SelectedProviderProfileImageUrl { get; set; }
+
         public OrderStatus Status { get; set; }
 
         public DateTime CreatedAt { get; set; }

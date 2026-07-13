@@ -20,7 +20,7 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
 
         [HttpPost("me/profile-image")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadMyProfileImage([FromForm] IFormFile file)
+        public async Task<IActionResult> UploadMyProfileImage(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("Image file is required.");
