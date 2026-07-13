@@ -1,11 +1,12 @@
-﻿using HomeMaintenanceAPI.Application.Common;
+﻿using System.Security.Cryptography;
+using System.Text;
+using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Application.DTOs.Auth;
 using HomeMaintenanceAPI.Application.Interfaces.Repositories;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
 using HomeMaintenanceAPI.Domain.Entities;
 using HomeMaintenanceAPI.Domain.Enums;
-using System.Security.Cryptography;
-using System.Text;
+using HomeMaintenanceAPI.Logs;
 
 namespace HomeMaintenanceAPI.Application.Services
 
@@ -381,6 +382,47 @@ namespace HomeMaintenanceAPI.Application.Services
 
             _logger.LogInformation(
                 "Password reset successfully. UserId={UserId}, Email={Email}",
+                user.Id,
+                user.Email);
+
+            return ServiceResult.Success();
+        }
+
+
+        public async Task<ServiceResult> ChangePasswordAsync(int userId, ChangePasswordDto dto)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+                return ServiceResult.Failure("User not found.");
+
+            var currentPasswordHash = ComputeHash(dto.CurrentPassword, user.PasswordSalt);
+
+            if (currentPasswordHash != user.PasswordHash)
+            {
+                _logger.LogWarning(
+                    "Change password failed. UserId={UserId}, Reason={Reason}",
+                    user.Id,
+                    "Invalid current password");
+
+                return ServiceResult.Failure("Current password is incorrect.");
+            }
+
+            var newSalt = GenerateSalt();
+            var newPasswordHash = ComputeHash(dto.NewPassword, newSalt);
+
+            user.PasswordSalt = newSalt;
+            user.PasswordHash = newPasswordHash;
+
+            // Clear refresh token so old sessions cannot keep refreshing.
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Password changed successfully. UserId={UserId}, Email={Email}",
                 user.Id,
                 user.Email);
 

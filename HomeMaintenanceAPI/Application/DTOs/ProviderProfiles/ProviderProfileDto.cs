@@ -13,10 +13,13 @@
         public int SpecializationId { get; set; }
 
         public string SpecializationName { get; set; } = string.Empty;
+
         public bool SpecializationIsActive { get; set; }
 
         public string? Bio { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public string? ProfileImageUrl { get; set; }
     }
 }

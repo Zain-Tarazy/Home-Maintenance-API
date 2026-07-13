@@ -138,7 +138,7 @@ namespace HomeMaintenanceAPI.Application.Mapping
                         ? src.SelectedProviderProfile.User.FullName
                         : null))
                 .ForMember(dest => dest.HasRating,
-                    opt => opt.MapFrom(src => src.Rating != null))
+                    opt => opt.MapFrom(src => src.Rating != null))  
                 .ForMember(dest => dest.RatingValue,
                     opt => opt.MapFrom(src => src.Rating != null
                         ? src.Rating.Value

@@ -19,5 +19,7 @@ namespace HomeMaintenanceAPI.Application.DTOs.Admin
         public bool HasProviderProfile { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public string? ProfileImageUrl { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.Orders;
+using HomeMaintenanceAPI.Application.Helpers;
 
 namespace HomeMaintenanceAPI.Application.Validaotrs.Orders
 {
@@ -24,6 +25,10 @@ namespace HomeMaintenanceAPI.Application.Validaotrs.Orders
             RuleFor(x => x.Longitude)
                 .InclusiveBetween(-180, 180)
                 .WithMessage("Longitude must be between -180 and 180.");
+
+            RuleFor(x => x)
+                .Must(x => LocationValidationHelper.IsWithinServiceArea(x.Latitude, x.Longitude))
+                .WithMessage("Order location must be within the supported service area.");
 
             RuleFor(x => x.AddressText)
                 .MaximumLength(250)

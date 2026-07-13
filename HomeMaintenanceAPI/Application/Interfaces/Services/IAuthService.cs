@@ -1,5 +1,6 @@
 ﻿using HomeMaintenanceAPI.Application.Common;
 using HomeMaintenanceAPI.Application.DTOs.Auth;
+using HomeMaintenanceAPI.Logs;
 
 namespace HomeMaintenanceAPI.Application.Interfaces.Services
 {
@@ -13,7 +14,7 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
         Task<ServiceResult<CurrentUserDto>> GetCurrentUserAsync(int userId);
         Task<ServiceResult> LogoutAsync(int userId);
         Task<ServiceResult> ForgotPasswordAsync(ForgotPasswordDto dto);
-
         Task<ServiceResult> ResetPasswordAsync(ResetPasswordDto dto);
+        Task<ServiceResult> ChangePasswordAsync(int userId, ChangePasswordDto dto);
     }
 }

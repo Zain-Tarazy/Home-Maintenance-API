@@ -1,9 +1,10 @@
 ﻿using System.Security.Claims;
+using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.Auth;
 using HomeMaintenanceAPI.Application.Interfaces.Services;
+using HomeMaintenanceAPI.Logs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using FluentValidation;
 
 
 namespace HomeMaintenanceAPI.Presentation.Controllers
@@ -21,6 +22,7 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         private readonly IValidator<RefreshTokenDto> _refreshValidator;
         private readonly IValidator<ForgotPasswordDto> _forgotPasswordValidator;
         private readonly IValidator<ResetPasswordDto> _resetPasswordValidator;
+        private readonly IValidator<ChangePasswordDto> _changePasswordValidator;
 
         public AuthController(
             IAuthService authService,
@@ -30,7 +32,8 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
             IValidator<ResendVerificationCodeDto> resendValidator,
             IValidator<RefreshTokenDto> refreshValidator,
             IValidator<ForgotPasswordDto> forgotPasswordValidator,
-            IValidator<ResetPasswordDto> resetPasswordValidator)
+            IValidator<ResetPasswordDto> resetPasswordValidator,
+            IValidator<ChangePasswordDto> changePasswordValidator)
         {
             _authService = authService;
             _registerValidator = registerValidator;
@@ -40,6 +43,7 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
             _refreshValidator = refreshValidator;
             _forgotPasswordValidator = forgotPasswordValidator;
             _resetPasswordValidator = resetPasswordValidator;
+            _changePasswordValidator = changePasswordValidator;
         }
 
         [HttpPost("register")]
@@ -199,6 +203,28 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
                 return BadRequest(result.Error);
 
             return Ok("Password has been reset successfully.");
+        }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+        {
+            var validationResult = await _changePasswordValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            var result = await _authService.ChangePasswordAsync(userId, dto);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
+
+            return Ok("Password changed successfully. Please log in again.");
         }
 
 

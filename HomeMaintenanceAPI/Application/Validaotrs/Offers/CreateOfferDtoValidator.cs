@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using HomeMaintenanceAPI.Application.DTOs.Offers;
+using HomeMaintenanceAPI.Application.Helpers;
 
 namespace HomeMaintenanceAPI.Application.Validaotrs.Offers
 {
@@ -26,6 +27,12 @@ namespace HomeMaintenanceAPI.Application.Validaotrs.Offers
             RuleFor(x => x.ProviderLongitude)
                 .InclusiveBetween(-180, 180)
                 .WithMessage("Provider longitude must be between -180 and 180.");
+
+            RuleFor(x => x)
+                .Must(x => LocationValidationHelper.IsWithinServiceArea(
+                    x.ProviderLatitude,
+                    x.ProviderLongitude))
+                .WithMessage("Provider location must be within the supported service area.");
         }
     }
 }
