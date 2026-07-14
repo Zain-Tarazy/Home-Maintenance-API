@@ -1,5 +1,4 @@
-﻿using HomeMaintenanceAPI.Domain.Entities;
-using HomeMaintenanceAPI.Domain.Enums;
+﻿using HomeMaintenanceAPI.Domain.Enums;
 
 namespace HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests
 {
@@ -15,7 +14,7 @@ namespace HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests
 
         public string PlanName { get; set; } = string.Empty;
 
-        public decimal Amount { get; set; }
+        //public decimal Amount { get; set; }
 
         public PaymentMethod PaymentMethod { get; set; }
 

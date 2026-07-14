@@ -87,7 +87,9 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
                 return BadRequest(result.Error);
             }
 
-            return Ok(result.Data);
+            var response = _mapper.Map<SubscriptionPaymentRequestDto>(result.Data);
+
+            return Ok(response);
         }
    
 

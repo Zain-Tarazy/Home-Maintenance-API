@@ -1,12 +1,10 @@
-﻿using HomeMaintenanceAPI.Domain.Entities;
+﻿using HomeMaintenanceAPI.Domain.Enums;
 
-namespace HomeMaintenanceAPI.Presentation.Controllers
+namespace HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests
 {
     public class CreateSubscriptionPaymentRequestFormDto
     {
         public int SubscriptionPlanId { get; set; }
-
-        public decimal Amount { get; set; }
 
         public PaymentMethod PaymentMethod { get; set; }
 

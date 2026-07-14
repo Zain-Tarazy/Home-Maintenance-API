@@ -10,7 +10,7 @@ namespace HomeMaintenanceAPI.Domain.Entities
 
         public int SubscriptionPlanId { get; set; }
 
-        public decimal Amount { get; set; }
+        //public decimal Amount { get; set; }
 
         public PaymentMethod PaymentMethod { get; set; }
 

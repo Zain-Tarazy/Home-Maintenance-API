@@ -172,9 +172,9 @@ namespace HomeMaintenanceAPI.Infrastructure.Data
                 .HasIndex(r => r.TransactionId)
                 .IsUnique();
 
-            modelBuilder.Entity<SubscriptionPaymentRequest>()
-                .Property(r => r.Amount)
-                .HasPrecision(18, 2);
+            //modelBuilder.Entity<SubscriptionPaymentRequest>()
+            //    .Property(r => r.Amount)
+            //    .HasPrecision(18, 2);
 
             modelBuilder.Entity<SubscriptionPaymentRequest>()
                 .HasOne(r => r.ProviderProfile)
@@ -194,11 +194,11 @@ namespace HomeMaintenanceAPI.Infrastructure.Data
                 .HasForeignKey(r => r.ReviewedByAdminId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<SubscriptionPaymentRequest>()
-                .ToTable(t =>
-                {
-                    t.HasCheckConstraint("CK_SubscriptionPaymentRequest_Amount", "[Amount] >= 0");
-                });
+            //modelBuilder.Entity<SubscriptionPaymentRequest>()
+            //    .ToTable(t =>
+            //    {
+            //        t.HasCheckConstraint("CK_SubscriptionPaymentRequest_Amount", "[Amount] >= 0");
+            //    });
 
             modelBuilder.Entity<SubscriptionPaymentRequest>()
                 .Property(r => r.ProofImageUrl)

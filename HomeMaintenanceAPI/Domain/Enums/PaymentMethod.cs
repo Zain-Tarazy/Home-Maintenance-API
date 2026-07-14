@@ -1,4 +1,4 @@
-﻿namespace HomeMaintenanceAPI.Domain.Entities
+﻿namespace HomeMaintenanceAPI.Domain.Enums
 {
     public enum PaymentMethod
     {

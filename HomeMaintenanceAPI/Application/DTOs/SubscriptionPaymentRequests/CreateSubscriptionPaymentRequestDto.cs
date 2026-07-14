@@ -1,4 +1,4 @@
-﻿using HomeMaintenanceAPI.Domain.Entities;
+﻿using HomeMaintenanceAPI.Domain.Enums;
 
 namespace HomeMaintenanceAPI.Application.DTOs.SubscriptionPaymentRequests
 {

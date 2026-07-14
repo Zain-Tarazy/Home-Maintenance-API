@@ -85,7 +85,7 @@ namespace HomeMaintenanceAPI.Application.Services
             {
                 ProviderProfileId = providerProfile.Id,
                 SubscriptionPlanId = plan.Id,
-                Amount = plan.Price,
+                //Amount = plan.Price,
                 PaymentMethod = dto.PaymentMethod,
                 TransactionId = transactionId,
                 ProofImageUrl = string.IsNullOrWhiteSpace(dto.ProofImageUrl)
@@ -100,11 +100,12 @@ namespace HomeMaintenanceAPI.Application.Services
             var createdRequest = await _requestRepository.GetByIdAsync(request.Id);
 
             _logger.LogInformation(
-                "Subscription payment request created. RequestId={RequestId}, ProviderProfileId={ProviderProfileId}, PlanId={PlanId}, Amount={Amount}",
+                "Subscription payment request created. RequestId={RequestId}, ProviderProfileId={ProviderProfileId}, PlanId={PlanId}",
                 request.Id,
                 request.ProviderProfileId,
-                request.SubscriptionPlanId,
-                request.Amount);
+                request.SubscriptionPlanId
+                //,request.Amount);
+                );
 
             return ServiceResult<SubscriptionPaymentRequest>.Success(createdRequest!);
         }
