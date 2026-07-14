@@ -9,8 +9,7 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Services
     {
         Task<PagedResult<Notification>> GetMineAsync(int userId, PaginationParams paginationParams);
 
-        Task<ServiceResult> MarkAsReadAsync(int notificationId, int userId);
-
+        Task<ServiceResult> MarkAsReadAsync(int userId, int notificationId);
         Task<ServiceResult> MarkAllAsReadAsync(int userId);
 
         Task CreateAndSendAsync(

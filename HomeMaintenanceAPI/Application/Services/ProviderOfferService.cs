@@ -424,6 +424,14 @@ namespace HomeMaintenanceAPI.Application.Services
             await _offerRepository.UpdateRangeAsync(otherPendingOffers);
             await _offerRepository.SaveChangesAsync();
 
+            await _notificationService.CreateAndSendAsync(
+                offer.ProviderProfile.UserId,
+                "Offer accepted for work",
+                "The customer continued work with you.",
+                NotificationType.OfferAcceptedForWork,
+                relatedOrderId: order.Id,
+                relatedOfferId: offer.Id);
+
             foreach (var pendingOffer in otherPendingOffers)
             {
                 await _notificationService.CreateAndSendAsync(

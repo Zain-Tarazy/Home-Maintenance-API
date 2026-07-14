@@ -33,6 +33,7 @@ namespace HomeMaintenanceAPI.Application.Mapping
 
             CreateMap<SubscriptionPaymentRequest, SubscriptionPaymentRequestDto>()
             .ForMember(dest => dest.ProviderName,
+
                 opt => opt.MapFrom(src => src.ProviderProfile.User.FullName))
             .ForMember(dest => dest.PlanName,
                 opt => opt.MapFrom(src => src.SubscriptionPlan.Name))
