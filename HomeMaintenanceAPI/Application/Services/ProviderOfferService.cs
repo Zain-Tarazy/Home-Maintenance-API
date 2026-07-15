@@ -343,7 +343,7 @@ namespace HomeMaintenanceAPI.Application.Services
             if (order.CustomerId != userId)
                 return ServiceResult<ProviderOffer>.Failure("You are not allowed to reject this provider.");
 
-            if (order.Status != OrderStatus.InspectionAccepted)
+            if (order.Status != OrderStatus.InspectionInProgress)
                 return ServiceResult<ProviderOffer>.Failure("Order is not in inspection stage.");
 
             if (offer.Status != OfferStatus.AcceptedForInspection)
@@ -396,7 +396,7 @@ namespace HomeMaintenanceAPI.Application.Services
             if (order.CustomerId != userId)
                 return ServiceResult<ProviderOffer>.Failure("You are not allowed to continue with this provider.");
 
-            if (order.Status != OrderStatus.InspectionAccepted)
+            if (order.Status != OrderStatus.InspectionInProgress)
                 return ServiceResult<ProviderOffer>.Failure("Order is not in inspection stage.");
 
             if (offer.Status != OfferStatus.AcceptedForInspection)

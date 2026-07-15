@@ -22,6 +22,10 @@ namespace HomeMaintenanceAPI.Domain.Entities
 
         public OrderStatus Status { get; set; } = OrderStatus.WaitingForOffers;
 
+        public string? InspectionTokenHash { get; set; }
+
+        public DateTime? InspectionTokenExpiresAt { get; set; }
+
         public string? CompletionTokenHash { get; set; }
 
         public DateTime? CompletionTokenExpiresAt { get; set; }

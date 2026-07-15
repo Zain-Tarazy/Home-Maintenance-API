@@ -208,6 +208,7 @@ namespace HomeMaintenanceAPI.Presentation.Controllers
         {
             var statusAllowsPhone =
                 offer.Order.Status == OrderStatus.InspectionAccepted ||
+                offer.Order.Status == OrderStatus.InspectionInProgress ||
                 offer.Order.Status == OrderStatus.InProgress ||
                 offer.Order.Status == OrderStatus.CompletionPending ||
                 offer.Order.Status == OrderStatus.Completed;

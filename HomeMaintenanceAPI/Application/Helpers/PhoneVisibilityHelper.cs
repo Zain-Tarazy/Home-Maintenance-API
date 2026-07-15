@@ -13,6 +13,7 @@ namespace HomeMaintenanceAPI.Application.Helpers
 
             var orderStatusAllowsPhone =
                 offer.OrderStatus == OrderStatus.InspectionAccepted ||
+                 offer.OrderStatus == OrderStatus.InspectionInProgress ||
                 offer.OrderStatus == OrderStatus.InProgress ||
                 offer.OrderStatus == OrderStatus.CompletionPending ||
                 offer.OrderStatus == OrderStatus.Completed;

@@ -7,6 +7,7 @@
         InProgress = 2,
         CompletionPending = 3,
         Completed = 4,
-        Cancelled = 5
+        Cancelled = 5,
+        InspectionInProgress = 6
     }
 }

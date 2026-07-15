@@ -22,6 +22,9 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<
+    IOrderInspectionService,
+    OrderInspectionService>();
 
 builder.Host.UseSerilog((context, services, configuration) =>
 {
