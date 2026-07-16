@@ -51,6 +51,24 @@ namespace HomeMaintenanceAPI.Application.Services
                     "Specialization inactive");
                 return ServiceResult<Order>.Failure("Specialization is not active.");
             }
+
+            var hasPendingOrder =
+    await _orderRepository.HasPendingOrderForSpecializationAsync(
+        customerId,
+        dto.SpecializationId);
+
+            if (hasPendingOrder)
+            {
+                _logger.LogWarning(
+                    "Order creation blocked. CustomerId={CustomerId}, SpecializationId={SpecializationId}, Reason={Reason}",
+                    customerId,
+                    dto.SpecializationId,
+                    "Customer already has a pending order for this specialization");
+
+                return ServiceResult<Order>.Failure(
+                    "You already have an active order waiting for offers or inspection confirmation for this specialization. Confirm or cancel that inspection before creating another order.");
+            }
+
             var order = new Order
             {
                 CustomerId = customerId,

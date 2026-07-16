@@ -216,6 +216,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    await context.Database.MigrateAsync();
+
+    //await DbSeeder.SeedRequiredDataAsync(context);
+
+    // Development/testing only:
+     await DbSeeder.SeedDemoDataAsync(context);
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseSerilogRequestLogging();

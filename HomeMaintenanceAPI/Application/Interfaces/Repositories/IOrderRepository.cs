@@ -17,6 +17,9 @@ namespace HomeMaintenanceAPI.Application.Interfaces.Repositories
 
         Task<bool> HasOffersAsync(int orderId);
 
+        Task<bool> HasPendingOrderForSpecializationAsync(
+    int customerId,
+    int specializationId);
         Task<Order> AddAsync(Order order);
 
         Task UpdateAsync(Order order);

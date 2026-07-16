@@ -102,6 +102,19 @@ namespace HomeMaintenanceAPI.Infrastructure.Repositories
                 .AnyAsync(o => o.OrderId == orderId);
         }
 
+        public async Task<bool> HasPendingOrderForSpecializationAsync(
+    int customerId,
+    int specializationId)
+        {
+            return await _context.Orders.AnyAsync(o =>
+                o.CustomerId == customerId &&
+                o.SpecializationId == specializationId &&
+                (
+                    o.Status == OrderStatus.WaitingForOffers ||
+                    o.Status == OrderStatus.InspectionAccepted
+                ));
+        }
+
         public async Task<Order> AddAsync(Order order)
         {
             await _context.Orders.AddAsync(order);
